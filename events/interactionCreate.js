@@ -1,11 +1,21 @@
-const { Events, EmbedBuilder } = require("discord.js");
+const {
+  Events,
+  EmbedBuilder,
+  ButtonStyle,
+  ButtonBuilder,
+  ActionRowBuilder,
+  ChannelType,
+  PermissionsBitField,
+} = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
 const config = require("../config.json");
 const mConfig = require("../messageConfig.json");
+
 const Guild = require("../models/guild");
 const Welcomer = require("../models/welcomer");
 const RolePanel = require("../models/rolePanel");
+const TicketPanel = require("../models/ticketPanel");
 
 const allowedGuilds = config.allowedGuilds;
 const allowedChannels = config.allowedChannels;
@@ -16,17 +26,17 @@ module.exports = {
   async execute(client, interaction) {
     if (isDevMode && !allowedGuilds.includes(interaction.guild.id)) {
       return interaction.reply({
-        content: "This command can only be used on allowed servers.",
+        content: "This interaction can only be used on allowed servers.",
         ephemeral: true,
       });
     }
 
-    if (!allowedChannels.includes(interaction.channel.id)) {
+    /* if (isDevMode && !allowedChannels.includes(interaction.channel.id)) {
       return interaction.reply({
-        content: "This command can only be used in specific channels.",
+        content: "This interaction can only be used in specific channels.",
         ephemeral: true,
       });
-    }
+    } */
 
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
@@ -69,6 +79,18 @@ module.exports = {
               ephemeral: true,
             });
           }
+        }
+      } else if (interaction.customId === "close_ticket") {
+        const ticketChannel = interaction.channel;
+
+        if (ticketChannel.name.includes(interaction.user.username)) {
+          setTimeout(() => ticketChannel.delete(), 5000);
+          return interaction.reply("Closing the ticket...");
+        } else {
+          return interaction.reply({
+            content: "You can't close this ticket!",
+            ephemeral: true,
+          });
         }
       }
       const button = client.buttons.get(interaction.customId);
@@ -216,9 +238,134 @@ module.exports = {
           content: `Panel \`${panelId}\` updated successfully!`,
           ephemeral: true,
         });
+      } else if (customId.startsWith("edit-ticket-panel")) {
+        const panelId = customId.split("_")[1];
+        const panel = await TicketPanel.findOne({
+          panelId,
+          guildId: interaction.guild.id,
+        });
+
+        if (!panel) {
+          return interaction.reply({
+            content: "Panel not found",
+            ephemeral: true,
+          });
+        }
+
+        const newTitle =
+          interaction.fields.getTextInputValue("title") || panel.title;
+        const newDescription =
+          interaction.fields.getTextInputValue("description") ||
+          panel.description;
+
+        panel.title = newTitle;
+        panel.description = newDescription;
+        await panel.save();
+
+        await interaction.reply({
+          content: `Panel \`${panelId}\` updated successfully!`,
+          ephemeral: true,
+        });
       } else {
         await interaction.reply({
-          content: "This modal is not recognized.",
+          content: "This modal is not recognized",
+          ephemeral: true,
+        });
+      }
+    } else if (interaction.isStringSelectMenu()) {
+      if (interaction.customId.startsWith("select-ticket-topic")) {
+        const selectedTopic = interaction.values[0];
+        const panelId = interaction.customId.split("_")[1];
+
+        // Sprawdź, czy użytkownik już ma otwarty kanał ticket
+        const existingChannel = interaction.guild.channels.cache.find(
+          (channel) =>
+            channel.name === `${selectedTopic}-${interaction.user.username}`
+        );
+
+        if (existingChannel) {
+          return interaction.reply({
+            content: `You already have an open ticket: ${existingChannel}`,
+            ephemeral: true,
+          });
+        }
+
+        const panel = await TicketPanel.findOne({
+          panelId,
+          guildId: interaction.guild.id,
+        });
+
+        if (!panel.adminRoleId) {
+          return interaction.reply({
+            content: "Admin role ID is missing in the database.",
+            ephemeral: true,
+          });
+        }
+
+        const adminRole = interaction.guild.roles.cache.get(panel.adminRoleId);
+
+        if (!adminRole) {
+          return interaction.reply({
+            content: "The specified admin role does not exist.",
+            ephemeral: true,
+          });
+        }
+
+        // Create the ticket channel
+        const ticketChannel = await interaction.guild.channels.create({
+          name: `${selectedTopic}-${interaction.user.username}`,
+          type: ChannelType.GuildText,
+          parent: null, // Jeśli chcesz umieścić w konkretnej kategorii, zamień null na ID kategorii
+          permissionOverwrites: [
+            {
+              id: interaction.guild.id,
+              deny: [PermissionsBitField.Flags.ViewChannel],
+            },
+            {
+              id: interaction.user.id,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+              ],
+            },
+            {
+              id: interaction.guild.roles.everyone.id,
+              deny: [PermissionsBitField.Flags.ViewChannel],
+            },
+            {
+              id: adminRole.id,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ManageMessages,
+                PermissionsBitField.Flags.ReadMessageHistory,
+                PermissionsBitField.Flags.ManageChannels,
+              ],
+            },
+          ],
+        });
+
+        const welcomeEmbed = new EmbedBuilder()
+          .setColor(mConfig.embedColorPrimary)
+          .setTitle(`Welcome to your ticket!`)
+          .setDescription(
+            `Please describe your issue related to **${selectedTopic}**. A staff member will be with you shortly.`
+          );
+
+        const closeButton = new ButtonBuilder()
+          .setCustomId("close_ticket")
+          .setLabel("Close Ticket")
+          .setStyle(ButtonStyle.Danger);
+
+        const row = new ActionRowBuilder().addComponents(closeButton);
+
+        await ticketChannel.send({
+          embeds: [welcomeEmbed],
+          components: [row],
+        });
+
+        await interaction.reply({
+          content: `Your ticket has been created: ${ticketChannel}`,
           ephemeral: true,
         });
       }
