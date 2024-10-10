@@ -1,4 +1,4 @@
-const { Events } = require("discord.js");
+const { Events, ActivityType } = require("discord.js");
 const mongoose = require("mongoose");
 
 module.exports = {
@@ -7,6 +7,8 @@ module.exports = {
   async execute(client) {
     console.log(`[INFO] Discord.js bot is ready!`.green);
     console.log(`[INFO] Logged in as ${client.user.tag}`.blue);
+
+    client.user.setActivity('www.yolobot.xyz', { type: ActivityType.Custom });
 
     const mongoURI = process.env.MONGO_URI;
 

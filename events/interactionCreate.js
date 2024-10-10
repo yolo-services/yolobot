@@ -5,6 +5,7 @@ const config = require("../config.json");
 const mConfig = require("../messageConfig.json");
 const Guild = require("../models/guild");
 const Welcomer = require("../models/welcomer");
+const RolePanel = require("../models/rolePanel");
 
 const allowedGuilds = config.allowedGuilds;
 const allowedChannels = config.allowedChannels;
@@ -47,6 +48,29 @@ module.exports = {
         });
       }
     } else if (interaction.isButton()) {
+      if (interaction.customId.startsWith("selfrole")) {
+        const roleId = interaction.customId.split("_")[1];
+        const role = interaction.guild.roles.cache.get(roleId);
+
+        if (role) {
+          const member = interaction.guild.members.cache.get(
+            interaction.user.id
+          );
+          if (member.roles.cache.has(roleId)) {
+            await member.roles.remove(roleId);
+            return interaction.reply({
+              content: `Role <@${role.id}> removed!`,
+              ephemeral: true,
+            });
+          } else {
+            await member.roles.add(roleId);
+            return interaction.reply({
+              content: `Role <@${role.id}> added!`,
+              ephemeral: true,
+            });
+          }
+        }
+      }
       const button = client.buttons.get(interaction.customId);
 
       if (!button) {
@@ -164,6 +188,34 @@ module.exports = {
           .setColor(mConfig.embedColorSuccess);
 
         await interaction.reply({ embeds: [embed] });
+      } else if (customId.startsWith("edit-panel")) {
+        const panelId = customId.split("_")[1];
+        const panel = await RolePanel.findOne({
+          panelId,
+          guildId: interaction.guild.id,
+        });
+
+        if (!panel) {
+          return interaction.reply({
+            content: "Panel not found.",
+            ephemeral: true,
+          });
+        }
+
+        const newTitle =
+          interaction.fields.getTextInputValue("title") || panel.title;
+        const newDescription =
+          interaction.fields.getTextInputValue("description") ||
+          panel.description;
+
+        panel.title = newTitle;
+        panel.description = newDescription;
+        await panel.save();
+
+        await interaction.reply({
+          content: `Panel \`${panelId}\` updated successfully!`,
+          ephemeral: true,
+        });
       } else {
         await interaction.reply({
           content: "This modal is not recognized.",
