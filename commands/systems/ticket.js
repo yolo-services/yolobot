@@ -160,7 +160,7 @@ module.exports = {
       row.addComponents(selectMenu);
 
       const embed = new EmbedBuilder()
-      .setColor(mConfig.embedColorPrimary)
+        .setColor(mConfig.embedColorPrimary)
         .setTitle(panel.title)
         .setDescription(panel.description)
         .setFooter({ text: `Powered By ${client.user.tag}` });

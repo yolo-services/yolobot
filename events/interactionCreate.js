@@ -6,6 +6,9 @@ const {
   ActionRowBuilder,
   ChannelType,
   PermissionsBitField,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -81,17 +84,20 @@ module.exports = {
           }
         }
       } else if (interaction.customId === "close_ticket") {
-        const ticketChannel = interaction.channel;
+        const modal = new ModalBuilder()
+          .setCustomId("close_ticket_modal")
+          .setTitle("Close Ticket");
 
-        if (ticketChannel.name.includes(interaction.user.username)) {
-          setTimeout(() => ticketChannel.delete(), 5000);
-          return interaction.reply("Closing the ticket...");
-        } else {
-          return interaction.reply({
-            content: "You can't close this ticket!",
-            ephemeral: true,
-          });
-        }
+        const reasonInput = new TextInputBuilder()
+          .setCustomId("close_ticket_reason")
+          .setLabel("Reason for closing the ticket")
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder("Enter your reason");
+
+        const row = new ActionRowBuilder().addComponents(reasonInput);
+        modal.addComponents(row);
+
+        await interaction.showModal(modal);
       }
       const button = client.buttons.get(interaction.customId);
 
@@ -266,6 +272,51 @@ module.exports = {
           content: `Panel \`${panelId}\` updated successfully!`,
           ephemeral: true,
         });
+      } else if (customId === "close_ticket_modal") {
+        const reason =
+          interaction.fields.getTextInputValue("close_ticket_reason") || "---";
+        const ticketChannel = interaction.channel;
+
+        // Stwórz embed z informacjami o zamknięciu
+        const closeEmbed = new EmbedBuilder()
+          .setColor(mConfig.embedColorError) // Możesz zmienić kolor na swój ulubiony
+          .setTitle("Ticket Closed")
+          .addFields(
+            {
+              name: "Opened by:",
+              value: `${ticketChannel.name.split("-")[1]}`,
+            },
+            {
+              name: "Closed by:",
+              value: `${interaction.user}`,
+            },
+            { name: "Reason:", value: `${reason}` }
+          )
+          .setTimestamp();
+
+        // Usuń kanał ticketa
+        await ticketChannel.delete();
+
+        const panel = await Guild.findOne({
+          guildId: interaction.guild.id,
+        });
+
+        if (!panel.archiveChannelId) {
+          return interaction.reply({
+            content: "ticket archive channel ID is missing in the database.",
+            ephemeral: true,
+          });
+        } else {
+          const archiveChannel = interaction.guild.channels.cache.get(
+            panel.archiveChannelId
+          );
+          await archiveChannel.send({ embeds: [closeEmbed] });
+        }
+
+        await interaction.reply({
+          content: `The ticket has been closed. Reason: ${reason}`,
+          ephemeral: true,
+        });
       } else {
         await interaction.reply({
           content: "This modal is not recognized",
@@ -347,10 +398,12 @@ module.exports = {
 
         const welcomeEmbed = new EmbedBuilder()
           .setColor(mConfig.embedColorPrimary)
+          .setAuthor({ text: interaction.user.username })
           .setTitle(`Welcome to your ticket!`)
           .setDescription(
             `Please describe your issue related to **${selectedTopic}**. A staff member will be with you shortly.`
-          );
+          )
+          .setFooter({ text: `Powered By ${client.user.tag}` });
 
         const closeButton = new ButtonBuilder()
           .setCustomId("close_ticket")
@@ -359,10 +412,12 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(closeButton);
 
-        await ticketChannel.send({
+        const welcomeMessage = await ticketChannel.send({
           embeds: [welcomeEmbed],
           components: [row],
         });
+
+        await welcomeMessage.pin();
 
         await interaction.reply({
           content: `Your ticket has been created: ${ticketChannel}`,

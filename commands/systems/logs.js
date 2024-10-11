@@ -19,7 +19,7 @@ module.exports = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("setup")
+        .setName("edit") 
         .setDescription("Change logs system options!")
         .addChannelOption((option) =>
           option
@@ -57,7 +57,7 @@ module.exports = {
           ephemeral: true,
         });
         break;
-      case "setup":
+      case "edit":
         if (newchannel) {
           let guildConfig = await Guild.findOne({ guildId });
 
