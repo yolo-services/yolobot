@@ -41,6 +41,9 @@ module.exports = {
       });
     } */
 
+    const { customId } = interaction;
+    console.log(customId);
+
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
 
@@ -61,7 +64,7 @@ module.exports = {
         });
       }
     } else if (interaction.isButton()) {
-      if (interaction.customId.startsWith("selfrole")) {
+      if (customId.startsWith("selfrole")) {
         const roleId = interaction.customId.split("_")[1];
         const role = interaction.guild.roles.cache.get(roleId);
 
@@ -83,7 +86,7 @@ module.exports = {
             });
           }
         }
-      } else if (interaction.customId === "close_ticket") {
+      } else if (customId === "close_ticket") {
         const modal = new ModalBuilder()
           .setCustomId("close_ticket_modal")
           .setTitle("Close Ticket");
@@ -92,25 +95,26 @@ module.exports = {
           .setCustomId("close_ticket_reason")
           .setLabel("Reason for closing the ticket")
           .setStyle(TextInputStyle.Short)
-          .setPlaceholder("Enter your reason");
+          .setPlaceholder("Enter your reason")
+          .setRequired(false);
 
         const row = new ActionRowBuilder().addComponents(reasonInput);
         modal.addComponents(row);
 
         await interaction.showModal(modal);
-      }
-      const button = client.buttons.get(interaction.customId);
+      } else {
+        const button = client.buttons.get(customId);
 
-      if (!button) {
-        return await interaction.reply({
-          content: "This button does not have an associated action.",
-          ephemeral: true,
-        });
-      }
+        if (!button) {
+          return await interaction.reply({
+            content: "This button does not have an associated action.",
+            ephemeral: true,
+          });
+        }
 
-      await button.execute(interaction);
+        await button.execute(interaction);
+      }
     } else if (interaction.isModalSubmit()) {
-      const { customId } = interaction;
       const guildConfig = await Guild.findOne({
         guildId: interaction.guild.id,
       });
@@ -274,49 +278,44 @@ module.exports = {
         });
       } else if (customId === "close_ticket_modal") {
         const reason =
-          interaction.fields.getTextInputValue("close_ticket_reason") || "---";
+          interaction.fields.getTextInputValue("close_ticket_reason") ||
+          "No reason privided";
         const ticketChannel = interaction.channel;
-
-        // Stwórz embed z informacjami o zamknięciu
-        const closeEmbed = new EmbedBuilder()
-          .setColor(mConfig.embedColorError) // Możesz zmienić kolor na swój ulubiony
-          .setTitle("Ticket Closed")
-          .addFields(
-            {
-              name: "Opened by:",
-              value: `${ticketChannel.name.split("-")[1]}`,
-            },
-            {
-              name: "Closed by:",
-              value: `${interaction.user}`,
-            },
-            { name: "Reason:", value: `${reason}` }
-          )
-          .setTimestamp();
-
-        // Usuń kanał ticketa
-        await ticketChannel.delete();
-
-        const panel = await Guild.findOne({
-          guildId: interaction.guild.id,
-        });
-
-        if (!panel.archiveChannelId) {
-          return interaction.reply({
-            content: "ticket archive channel ID is missing in the database.",
-            ephemeral: true,
-          });
-        } else {
-          const archiveChannel = interaction.guild.channels.cache.get(
-            panel.archiveChannelId
-          );
-          await archiveChannel.send({ embeds: [closeEmbed] });
-        }
+        const guild = await Guild.findOne({ guildId: interaction.guild.id });
+        const user = interaction.guild.members.cache.find(
+          (member) => member.user.username === ticketChannel.name.split("-")[1]
+        );
 
         await interaction.reply({
-          content: `The ticket has been closed. Reason: ${reason}`,
-          ephemeral: true,
+          content: "Closing Ticket ...",
+          aphemeral: true,
         });
+
+        await ticketChannel.delete();
+
+        if (guild.archiveChannelId) {
+          const archiveChannel = interaction.guild.channels.cache.get(
+            guild.archiveChannelId
+          );
+
+          const closeEmbed = new EmbedBuilder()
+            .setColor(mConfig.embedColorError)
+            .setTitle("Ticket Closed")
+            .addFields(
+              {
+                name: "Opened by:",
+                value: `${user}`,
+              },
+              {
+                name: "Closed by:",
+                value: `${interaction.user}`,
+              },
+              { name: "Reason:", value: `${reason}` }
+            )
+            .setTimestamp();
+
+          await archiveChannel.send({ embeds: [closeEmbed] });
+        }
       } else {
         await interaction.reply({
           content: "This modal is not recognized",
@@ -398,7 +397,7 @@ module.exports = {
 
         const welcomeEmbed = new EmbedBuilder()
           .setColor(mConfig.embedColorPrimary)
-          .setAuthor({ text: interaction.user.username })
+          .setAuthor({ name: interaction.user.username })
           .setTitle(`Welcome to your ticket!`)
           .setDescription(
             `Please describe your issue related to **${selectedTopic}**. A staff member will be with you shortly.`

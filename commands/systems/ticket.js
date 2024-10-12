@@ -63,6 +63,23 @@ module.exports = {
     )
     .addSubcommand((subcommand) =>
       subcommand
+        .setName("removetopic")
+        .setDescription("Remove a topic from the ticket panel")
+        .addStringOption((option) =>
+          option
+            .setName("panelid")
+            .setDescription("The panel ID")
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("label")
+            .setDescription("The label of the topic you wand to remove")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
         .setName("edit")
         .setDescription("Edit a ticket panel")
         .addStringOption((option) =>
@@ -71,8 +88,8 @@ module.exports = {
             .setDescription("The panel ID")
             .setRequired(true)
         )
-        .addRoleOption((option) =>
-          option.setName("adminrole").setDescription("The admin of ticket role")
+        .addStringOption((option) =>
+          option.setName("title").setDescription("The title of the panel")
         )
     )
     .addSubcommand((subcommand) =>
@@ -86,21 +103,46 @@ module.exports = {
             .setRequired(true)
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("delete")
+        .setDescription("Delete a ticket panel")
+        .addStringOption((option) =>
+          option
+            .setName("panelid")
+            .setDescription("The panel ID")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(client, interaction) {
     const subcommand = interaction.options.getSubcommand();
 
+    const panelId = interaction.options.getString("panelid");
+
+    const title = interaction.options.getString("title") || "Ticket Panel";
+    const adminRole = interaction.options.getRole("adminrole");
+
+    const label = interaction.options.getString("label");
+    const description = interaction.options.getString("description");
+
+    const panel = await TicketPanel.findOne({
+      panelId,
+      guildId: interaction.guild.id,
+    });
+
+    if (subcommand !== "create" && !panel) {
+      return interaction.reply("Panel not found");
+    }
+
     // Create a new ticket panel
     if (subcommand === "create") {
-      const panelId = interaction.options.getString("panelid");
-      const title = interaction.options.getString("title") || "Ticket Panel";
-      const adminRole = interaction.options.getRole("adminrole");
-
       const newPanel = new TicketPanel({
         panelId,
         guildId: interaction.guild.id,
         title,
+        description,
         topics: [],
         adminRoleId: adminRole.id,
       });
@@ -111,39 +153,27 @@ module.exports = {
 
     // Add a topic to an existing ticket panel
     else if (subcommand === "addtopic") {
-      const panelId = interaction.options.getString("panelid");
-      const label = interaction.options.getString("label");
-      const description = interaction.options.getString("description");
-
-      const panel = await TicketPanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-      });
-
-      if (!panel) {
-        return interaction.reply("Panel not found");
-      }
-
       panel.topics.push({ label, description });
       await panel.save();
 
       await interaction.reply(
         `Topic **${label}** added to panel \`${panelId}\``
       );
+    } else if (subcommand === "removetopic") {
+      await TicketPanel.findOneAndUpdate(
+        { panelId: panelId }, // Znajdź panel po panelId
+        { $pull: { topics: { label: label } } }, // Usuń temat z pasującym label
+        { new: true } // Zwróć zaktualizowany dokument
+      );
+      await panel.save();
+
+      await interaction.reply(
+        `Topic **${label}** removed from panel \`${panelId}\``
+      );
     }
 
     // Send the ticket panel as a SelectMenu
     else if (subcommand === "send") {
-      const panelId = interaction.options.getString("panelid");
-      const panel = await TicketPanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-      });
-
-      if (!panel) {
-        return interaction.reply("Panel not found");
-      }
-
       const row = new ActionRowBuilder();
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId(`select-ticket-topic_${panelId}`)
@@ -170,21 +200,9 @@ module.exports = {
         components: [row],
       });
     } else if (subcommand === "edit") {
-      const panelId = interaction.options.getString("panelid");
-      const adminRole = interaction.options.getRole("adminrole");
-
-      const panel = await TicketPanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-        adminRoleId: adminRole.id,
-      });
-
-      panel.adminRoleId = adminRole.id;
-
-      await panel.save();
-
-      if (!panel) {
-        return interaction.reply("Panel not found");
+      if (adminRole) {
+        panel.adminRoleId = adminRole.id;
+        await panel.save();
       }
 
       const modal = new ModalBuilder()

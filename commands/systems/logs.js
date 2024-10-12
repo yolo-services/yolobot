@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  EmbedBuilder,
+} = require("discord.js");
 const Guild = require("../../models/guild");
 const mConfig = require("../../messageConfig.json");
 
@@ -13,18 +17,24 @@ module.exports = {
         .addChannelOption((option) =>
           option
             .setName("channel")
-            .setDescription("Messages and notifications channel!")
+            .setDescription("Messages and notifications channel")
             .setRequired(true)
+        )
+        .addChannelOption((option) =>
+          option.setName("archives").setDescription("Tickets archives channel")
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("edit") 
+        .setName("edit")
         .setDescription("Change logs system options!")
         .addChannelOption((option) =>
           option
             .setName("newchannel")
             .setDescription("New messages and notifications channel!")
+        )
+        .addChannelOption((option) =>
+          option.setName("archives").setDescription("Tickets archives channel")
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -32,7 +42,7 @@ module.exports = {
     const guildId = interaction.guild.id;
     const subcommand = interaction.options.getSubcommand();
     const channel = interaction.options.getChannel("channel");
-    const newchannel = interaction.options.getChannel("newchannel");
+    const archives = interaction.options.getChannel("archives");
 
     switch (subcommand) {
       case "create":
@@ -50,6 +60,7 @@ module.exports = {
           guildId,
           logChannelId: channel.id,
         });
+        if (archives) guildConfig.archiveChannelId = archives.id;
         await guildConfig.save();
 
         await interaction.reply({
@@ -58,21 +69,22 @@ module.exports = {
         });
         break;
       case "edit":
-        if (newchannel) {
+        if (channel) {
           let guildConfig = await Guild.findOne({ guildId });
 
           if (!guildConfig) {
             guildConfig = new Guild({
               guildId,
-              logChannelId: newchannel.id,
+              logChannelId: channel.id,
             });
           }
 
-          guildConfig.logChannelId = newchannel.id;
+          guildConfig.logChannelId = channel.id;
+          if (archives) guildConfig.archiveChannelId = archives.id;
           await guildConfig.save();
 
           return interaction.reply({
-            content: `New logs channel has been set to <#${newchannel.id}>`,
+            content: `New logs channel has been set to <#${channel.id}>`,
             ephemeral: true,
           });
         }
