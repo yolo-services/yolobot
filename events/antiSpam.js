@@ -9,6 +9,7 @@ const TIME_WINDOW = 1000;
 module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
+    const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
     if (autoModData.enabledFeatures.antiSpam) return;
 
     if (
@@ -19,8 +20,6 @@ module.exports = {
 
     const userId = message.author.id;
     const now = Date.now();
-
-    const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
 
     if (!spamMap.has(userId)) {
       spamMap.set(userId, []);
