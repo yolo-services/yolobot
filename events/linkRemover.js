@@ -4,12 +4,15 @@ const {
   PermissionsBitField,
   PermissionFlagsBits,
 } = require("discord.js");
-const AutoMod = require("../models/automod"); // Zakładam, że wcześniej utworzony model MongoDB dla przechowywania domen
+const AutoMod = require("../models/automod");
 const mConfig = require("../messageConfig.json");
 
 module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
+    const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
+    if (!autoModData.enabledFeatures.linkRemover) return;
+
     if (
       message.author.bot ||
       message.member.permissions.has(PermissionFlagsBits.Administrator)
@@ -20,8 +23,6 @@ module.exports = {
 
     if (linkRegex.test(message.content)) {
       const foundLinks = message.content.match(linkRegex);
-
-      const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
 
       let isAllowed = false;
 
@@ -44,7 +45,7 @@ module.exports = {
               .setColor(mConfig.embedColorError)
               .setTitle("Message removed")
               .setDescription(
-                `Your message on the **${message.guild.name}** server has been deleted because it contained an unauthorized link`
+                `Your message on the **${message.guild.name}** server has been deleted because it contained an unauthorized link.`
               )
               .addFields({ name: "Message", value: message.content }),
           ],

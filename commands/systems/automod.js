@@ -34,12 +34,47 @@ module.exports = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("links")
-        .setDescription("Change AutoMod system options")
+        .setName("domains")
+        .setDescription("Change AutoMod linkRemover system options")
         .addStringOption((option) =>
           option
             .setName("allowedlink")
-            .setDescription("New Allowed link url for antylink in automod")
+            .setDescription("New Allowed link url for linkRemover in automod")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("words")
+        .setDescription("Change AutoMod wordCensorship system options")
+        .addStringOption((option) =>
+          option
+            .setName("bannedword")
+            .setDescription("New Banned word for wordCensorship in automod")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("feature")
+        .setDescription("Enable or disable a specific auto mod feature.")
+        .addStringOption((option) =>
+          option
+            .setName("name")
+            .setDescription("The name of the feature to enable or disable.")
+            .setRequired(true)
+            .addChoices(
+              { name: "Link Remover", value: "linkRemover" },
+              { name: "Anti Spam", value: "antiSpam" },
+              { name: "Word Censorship", value: "wordCensorship" },
+              { name: "Caps Lock Detector", value: "capsLockDetector" },
+              { name: "Emoji Manager", value: "emojiManager" }
+            )
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Set the feature to enabled or disabled.")
             .setRequired(true)
         )
     )
@@ -47,8 +82,14 @@ module.exports = {
   async execute(client, interaction) {
     const guildId = interaction.guild.id;
     const subcommand = interaction.options.getSubcommand();
+
     const channel = interaction.options.getChannel("channel");
     const allowedlink = interaction.options.getString("allowedlink");
+
+    const bannedword = interaction.options.getString("bannedword");
+
+    const featureName = interaction.options.getString("name");
+    const enabled = interaction.options.getBoolean("enabled");
 
     if (subcommand === "create") {
       let guildConfig = await AutoMod.findOne({ guildId });
@@ -56,7 +97,7 @@ module.exports = {
       if (guildConfig) {
         return interaction.reply({
           content:
-            "You have already created automod system! Want to edit? Use `/automod edit`",
+            "AutoMod is already set up for this server! Want to edit? Use `/automod edit`",
           ephemeral: true,
         });
       }
@@ -90,13 +131,13 @@ module.exports = {
         content: `New AutoMod channel has been set to <#${channel.id}>`,
         ephemeral: true,
       });
-    } else if (subcommand === "links") {
+    } else if (subcommand === "domains") {
       let guildConfig = await AutoMod.findOne({ guildId });
 
       if (!guildConfig) {
         return interaction.reply({
           content:
-            "You have not created automod system yet! Use `/automod create`",
+            "AutoMod is not set up for this server! Use `/automod create`",
           ephemeral: true,
         });
       }
@@ -113,6 +154,49 @@ module.exports = {
 
       await interaction.reply({
         content: `Domain **${allowedlink}** has been added to the list of allowed domains`,
+        ephemeral: true,
+      });
+    } else if (subcommand === "words") {
+      let guildConfig = await AutoMod.findOne({ guildId });
+
+      if (!guildConfig) {
+        return interaction.reply({
+          content:
+            "AutoMod is not set up for this server! Use `/automod create`",
+          ephemeral: true,
+        });
+      }
+
+      if (guildConfig.bannedWords.includes(bannedword)) {
+        return interaction.reply({
+          content: `Word **${bannedword}** is already on the list of banned words`,
+          ephemeral: true,
+        });
+      }
+
+      guildConfig.bannedWords.push(bannedword);
+      await guildConfig.save();
+
+      await interaction.reply({
+        content: `Word **${bannedword}** has been added to the list of banned words`,
+        ephemeral: true,
+      });
+    } else if (subcommand === "feature") {
+      const autoModData = await AutoMod.findOne({
+        guildId: interaction.guild.id,
+      });
+
+      if (!autoModData) {
+        return interaction.reply(
+          "AutoMod is not set up for this server! Use `/automod create`"
+        );
+      }
+
+      autoModData.enabledFeatures[featureName] = enabled;
+      await autoModData.save();
+
+      return interaction.reply({
+        content: `The feature **${featureName}** has been set to \`${enabled}\``,
         ephemeral: true,
       });
     }
