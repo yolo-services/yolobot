@@ -6,6 +6,7 @@ const {
 } = require("discord.js");
 const Welcomer = require("../../models/welcomer");
 const mConfig = require("../../messageConfig.json");
+const Guild = require("../../models/guild");
 
 const joinWelcomerButton = require("../../components/buttons/joinWelcomerButton");
 const leaveWelcomerButton = require("../../components/buttons/leaveWelcomerButton");
@@ -36,13 +37,33 @@ module.exports = {
             .setDescription("New messages and notifications channel!")
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("toggle")
+        .setDescription("Enable or disable the entire Welcomer system")
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Enable or disable the Welcomer system")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
     const guildId = interaction.guild.id;
-
     const subcommand = interaction.options.getSubcommand();
 
     const channel = interaction.options.getChannel("channel");
+
+    const enabled = interaction.options.getBoolean("enabled");
+
+    let guildData = await Guild.findOne({ guildId: interaction.guild.id });
+
+    if (subcommand !== "toggle" && !guildData.enabledSystems.welcomer) {
+      return interaction.reply(
+        "This system is disabled! Use `/welcomer toggle enabled:`"
+      );
+    }
 
     if (subcommand === "create") {
       let welcomerConfig = await Welcomer.findOne({ guildId });
@@ -95,6 +116,13 @@ module.exports = {
 
       const row = new ActionRowBuilder().addComponents(join, leave, cancel);
       await interaction.reply({ embeds: [setupEmbed], components: [row] });
+    } else if (subcommand === "toggle") {
+      guildData.enabledSystems.welcomer = enabled;
+      await guildData.save();
+
+      return interaction.reply(
+        `The Welcomer system has been ${enabled ? "enabled" : "disabled"}`
+      );
     }
   },
 };

@@ -4,6 +4,7 @@ const {
   EmbedBuilder,
 } = require("discord.js");
 const AutoMod = require("../../models/automod");
+const Guild = require("../../models/guild");
 const mConfig = require("../../messageConfig.json");
 
 module.exports = {
@@ -78,6 +79,17 @@ module.exports = {
             .setRequired(true)
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("toggle")
+        .setDescription("Enable or disable the entire AutoMod system")
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Enable or disable the AutoMod system")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
     const guildId = interaction.guild.id;
@@ -90,6 +102,14 @@ module.exports = {
 
     const featureName = interaction.options.getString("name");
     const enabled = interaction.options.getBoolean("enabled");
+
+    let guildData = await Guild.findOne({ guildId });
+
+    if (subcommand !== "toggle" && !guildData.enabledSystems.autoMod) {
+      return interaction.reply(
+        "This system is disabled! Use `/automod toggle enabled:`"
+      );
+    }
 
     if (subcommand === "create") {
       let guildConfig = await AutoMod.findOne({ guildId });
@@ -199,6 +219,13 @@ module.exports = {
         content: `The feature **${featureName}** has been set to \`${enabled}\``,
         ephemeral: true,
       });
+    } else if (subcommand === "toggle") {
+      guildData.enabledSystems.autoMod = enabled;
+      await guildData.save();
+
+      return interaction.reply(
+        `The AutoMod system has been ${enabled ? "enabled" : "disabled"}.`
+      );
     }
   },
 };

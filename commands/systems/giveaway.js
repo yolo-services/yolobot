@@ -10,6 +10,7 @@ const {
   TimestampStyles,
 } = require("discord.js");
 const Giveaway = require("../../models/giveaway");
+const Guild = require("../../models/guild");
 const mConfig = require("../../messageConfig.json");
 
 module.exports = {
@@ -67,6 +68,17 @@ module.exports = {
             .setDescription("Channel to send the giveaway message")
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("toggle")
+        .setDescription("Enable or disable the entire Giveaway system")
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Enable or disable the Giveaway system")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(client, interaction) {
@@ -76,10 +88,21 @@ module.exports = {
     const duration = interaction.options.getInteger("duration");
     const giveawayId = interaction.options.getString("giveawayid");
     const channel = interaction.options.getChannel("channel");
+
     const channelId = channel?.id || interaction.channel.id;
     const endTime = new Date(Date.now() + duration * 60000);
 
     const subcommand = interaction.options.getSubcommand();
+
+    const enabled = interaction.options.getBoolean("enabled");
+
+    let guildData = await Guild.findOne({ guildId: interaction.guild.id });
+
+    if (subcommand !== "toggle" && !guildData.enabledSystems.giveaway) {
+      return interaction.reply(
+        "This system is disabled! Use `/giveaway toggle enabled:`"
+      );
+    }
 
     const giveaway = await Giveaway.findOne({
       giveawayId: giveawayId,
@@ -161,6 +184,13 @@ module.exports = {
       await interaction.reply({
         content: `Giveaway message has been send to ${giveawayChannel}`,
       });
+    } else if (subcommand === "toggle") {
+      guildData.enabledSystems.giveaway = enabled;
+      await guildData.save();
+
+      return interaction.reply(
+        `The Giveaway system has been ${enabled ? "enabled" : "disabled"}`
+      );
     }
   },
 };

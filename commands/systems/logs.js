@@ -37,16 +37,35 @@ module.exports = {
           option.setName("archives").setDescription("Tickets archives channel")
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("toggle")
+        .setDescription("Enable or disable the entire Logs system")
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Enable or disable the Logs system")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
     const guildId = interaction.guild.id;
-    
+
     const subcommand = interaction.options.getSubcommand();
 
     const channel = interaction.options.getChannel("channel");
     const archives = interaction.options.getChannel("archives");
 
     let guildConfig = await Guild.findOne({ guildId });
+
+    const enabled = interaction.options.getBoolean("enabled");
+
+    if (subcommand !== "toggle" && !guildConfig.enabledSystems.logs) {
+      return interaction.reply(
+        "This system is disabled! Use `/logs toggle enabled:`"
+      );
+    }
 
     if (subcommand === "create") {
       if (guildConfig) {
@@ -84,6 +103,13 @@ module.exports = {
         content: `New logs channel has been set to <#${channel.id}>`,
         ephemeral: true,
       });
+    } else if (subcommand === "toggle") {
+      guildConfig.enabledSystems.logs = enabled;
+      await guildConfig.save();
+
+      return interaction.reply(
+        `The Logs system has been ${enabled ? "enabled" : "disabled"}`
+      );
     }
   },
 };

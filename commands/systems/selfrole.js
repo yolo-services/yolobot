@@ -11,6 +11,7 @@ const {
 } = require("discord.js");
 const mConfig = require("../../messageConfig.json");
 const RolePanel = require("../../models/rolePanel");
+const Guild = require("../../models/guild");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -109,6 +110,17 @@ module.exports = {
             .setRequired(true)
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("toggle")
+        .setDescription("Enable or disable the entire Selfrole system")
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Enable or disable the Selfrole system")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(client, interaction) {
@@ -125,6 +137,16 @@ module.exports = {
     const description =
       interaction.options.getString("description") ||
       "Click the buttons to assign roles";
+
+    const enabled = interaction.options.getBoolean("enabled");
+
+    let guildData = await Guild.findOne({ guildId: interaction.guild.id });
+
+    if (subcommand !== "toggle" && !guildData.enabledSystems.selfrole) {
+      return interaction.reply(
+        "This system is disabled! Use `/selfrole toggle enabled:`"
+      );
+    }
 
     const panel = await RolePanel.findOne({
       panelId,
@@ -229,6 +251,13 @@ module.exports = {
         embeds: [embed],
         components: [row],
       });
+    } else if (subcommand === "toggle") {
+      guildData.enabledSystems.selfrole = enabled;
+      await guildData.save();
+
+      return interaction.reply(
+        `The Selfrole system has been ${enabled ? "enabled" : "disabled"}`
+      );
     }
   },
 };

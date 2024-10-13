@@ -11,6 +11,7 @@ const {
 } = require("discord.js");
 const TicketPanel = require("../../models/ticketPanel");
 const mConfig = require("../../messageConfig.json");
+const Guild = require("../../models/guild");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -114,6 +115,17 @@ module.exports = {
             .setRequired(true)
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("toggle")
+        .setDescription("Enable or disable the entire Ticket system")
+        .addBooleanOption((option) =>
+          option
+            .setName("enabled")
+            .setDescription("Enable or disable the Ticket system")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(client, interaction) {
@@ -126,6 +138,16 @@ module.exports = {
 
     const label = interaction.options.getString("label");
     const description = interaction.options.getString("description");
+
+    const enabled = interaction.options.getBoolean("enabled");
+
+    let guildData = await Guild.findOne({ guildId: interaction.guild.id });
+
+    if (subcommand !== "toggle" && !guildData.enabledSystems.ticket) {
+      return interaction.reply(
+        "This system is disabled! Use `/ticket toggle enabled:`"
+      );
+    }
 
     const panel = await TicketPanel.findOne({
       panelId,
@@ -236,6 +258,13 @@ module.exports = {
       );
 
       await interaction.showModal(modal);
+    } else if (subcommand === "toggle") {
+      guildData.enabledSystems.ticket = enabled;
+      await guildData.save();
+
+      return interaction.reply(
+        `The Ticket system has been ${enabled ? "enabled" : "disabled"}`
+      );
     }
   },
 };
