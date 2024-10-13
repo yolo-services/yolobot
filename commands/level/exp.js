@@ -67,14 +67,14 @@ module.exports = {
     let userData =
       (await UserLevel.findOne({
         userId: user.id,
-        guildId: message.guild.id,
+        guildId: interaction.guild.id,
       })) || new UserLevel({ userId: user.id, guildId: interaction.guild.id });
 
     if (subcommand === "add") {
       userData.exp += amount;
       await userData.save(); // Zapisz zmiany w bazie
       await interaction.reply({
-        content: `${amount} experience points have been added to ${user.username}`,
+        content: `\`${amount}\` experience points have been added to ${user}`,
         ephemeral: true,
       });
     } else if (subcommand === "remove") {
@@ -82,14 +82,14 @@ module.exports = {
       if (userData.exp < 0) userData.exp = 0; // Zapewnij, że doświadczenie nie będzie ujemne
       await userData.save(); // Zapisz zmiany w bazie
       await interaction.reply({
-        content: `${amount} experience points have been removed from ${user.username}`,
+        content: `\`${amount}\` experience points have been removed from ${user}`,
         ephemeral: true,
       });
     } else if (subcommand === "set") {
       userData.exp = amount;
       await userData.save(); // Zapisz zmiany w bazie
       await interaction.reply({
-        content: `Experience points for ${user.username} have been set to ${amount}`,
+        content: `Experience points for ${user} have been set to \`${amount}\``,
         ephemeral: true,
       });
     }

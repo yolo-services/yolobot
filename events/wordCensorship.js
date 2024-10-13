@@ -24,14 +24,16 @@ module.exports = {
     if (containsBannedWord) {
       await message.delete();
 
-      message.author.send({
+      await message.author.send({
         embeds: [
           new EmbedBuilder()
             .setColor(mConfig.embedColorError)
             .setTitle("Message removed")
             .setDescription(
-              `Your message on the **${message.guild.name}** server was deleted for using inappropriate language.`
-            ),
+              `Your message on the **${message.guild.name}** server was deleted for using inappropriate language`
+            )
+            .addFields({ name: "Message", value: message.content })
+            .setTimestamp(),
         ],
       });
 

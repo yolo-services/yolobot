@@ -22,14 +22,16 @@ module.exports = {
     if (emojiCount > emojiLimit) {
       await message.delete();
 
-      message.author.send({
+      await message.author.send({
         embeds: [
           new EmbedBuilder()
             .setColor(mConfig.embedColorError)
             .setTitle("Message removed")
             .setDescription(
-              `Your message on the **${message.guild.name}** server was deleted because it contained too many emojis (limit is ${emojiLimit}).`
-            ),
+              `Your message on the **${message.guild.name}** server was deleted because it contained too many emojis (limit is ${emojiLimit})`
+            )
+            .addFields({ name: "Message", value: message.content })
+            .setTimestamp(),
         ],
       });
 

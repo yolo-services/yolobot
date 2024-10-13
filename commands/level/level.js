@@ -4,6 +4,7 @@ const {
   PermissionFlagsBits,
 } = require("discord.js");
 const UserLevel = require("../../models/userLevel");
+const mConfig = require("../../messageConfig.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -18,22 +19,22 @@ module.exports = {
   async execute(client, interaction) {
     const target = interaction.options.getUser("user") || interaction.user;
 
-    (await UserLevel.findOne({
-      userId: target.id,
-      guildId: interaction.guild.id,
-    })) ||
+    const userData =
+      (await UserLevel.findOne({
+        userId: target.id,
+        guildId: interaction.guild.id,
+      })) ||
       new UserLevel({ userId: target.id, guildId: interaction.guild.id });
 
     const levelEmbed = new EmbedBuilder()
-      .setColor("#00FF00")
+      .setColor(mConfig.embedColorPrimary)
       .setTitle(`${target.username}'s Level`)
       .addFields(
-        { name: "Level", value: userData.level.toString(), inline: true },
-        { name: "Exp", value: userData.exp.toString(), inline: true },
+        { name: "Level", value: `${userData.level}`, inline: true },
+        { name: "Exp", value: `${userData.exp}`, inline: true },
         {
           name: "Next Level Exp",
-          value: userData.nextLevelExp.toString(),
-          inline: true,
+          value: `${userData.nextLevelExp}`,
         }
       );
 

@@ -7,11 +7,13 @@ const {
 const AutoMod = require("../models/automod");
 const mConfig = require("../messageConfig.json");
 
+const TIMEOUT_DURATION = 60000;
+
 module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
     const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
-    if (!autoModData.enabledFeatures.linkRemover) return;
+    if (!autoModData || !autoModData.enabledFeatures.linkRemover) return;
 
     if (
       message.author.bot ||
@@ -24,30 +26,29 @@ module.exports = {
     if (linkRegex.test(message.content)) {
       const foundLinks = message.content.match(linkRegex);
 
-      let isAllowed = false;
-
-      for (const link of foundLinks) {
-        if (
-          autoModData &&
-          autoModData.domains.some((domain) => link.includes(domain))
-        ) {
-          isAllowed = true;
-          break;
-        }
-      }
+      let isAllowed = foundLinks.some((link) =>
+        autoModData.domains.some((domain) => link.includes(domain))
+      );
 
       if (!isAllowed) {
-        await message.delete();
+        await message.member.timeout(TIMEOUT_DURATION);
 
-        message.author.send({
+        await message.delete().catch((e) => {
+          console.log(`Nie udało się usunąć wiadomości: ${e}`);
+          return;
+        });
+
+        await message.author.send({
           embeds: [
             new EmbedBuilder()
               .setColor(mConfig.embedColorError)
-              .setTitle("Message removed")
+              .setTitle("You have been muted")
               .setDescription(
-                `Your message on the **${message.guild.name}** server has been deleted because it contained an unauthorized link.`
+                `You were muted on the **${message.guild.name}** server for unauthorized link.`
               )
-              .addFields({ name: "Message", value: message.content }),
+              .addFields({ name: "Message", value: message.content })
+              .setFooter({ text: "This mute lasts for 1 minute." })
+              .setTimestamp(),
           ],
         });
 
@@ -55,6 +56,7 @@ module.exports = {
           const logChannel = message.guild.channels.cache.get(
             autoModData.channelId
           );
+
           if (logChannel) {
             const logEmbed = new EmbedBuilder()
               .setColor(mConfig.embedColorError)
@@ -65,10 +67,14 @@ module.exports = {
                   value: `<@${message.author.id}> (${message.author.id})`,
                 },
                 { name: "Message", value: message.content },
-                { name: "Channel", value: `<#${message.channel.id}>` }
+                { name: "Channel", value: `<#${message.channel.id}>` },
+                { name: "Action", value: "1 minute mute applied" }
               )
               .setTimestamp();
-            logChannel.send({ embeds: [logEmbed] });
+
+            await logChannel.send({ embeds: [logEmbed] }).catch((err) => {
+              console.error(`Nie udało się wysłać logów: ${err}`);
+            });
           }
         }
       }

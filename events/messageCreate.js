@@ -14,18 +14,18 @@ module.exports = {
       })) ||
       new UserLevel({ userId: message.author.id, guildId: message.guild.id });
 
-    userLevelData.xp += xpToAdd;
+    userLevelData.exp += xpToAdd;
 
     const requiredXp = userLevelData.level * 100;
 
-    if (userLevelData.xp >= requiredXp) {
+    if (userLevelData.exp >= requiredXp) {
       userLevelData.level += 1;
-      userLevelData.xp = 0;
+      userLevelData.exp = 0;
       message.channel.send(
-        `Congratulations! ${message.author.username} leveled up to level ${userLevelData.level}!`
+        `**Congratulations!** ${message.author} leveled up to level **${userLevelData.level}**!`
       );
     }
-
+    userLevelData.nextLevelExp = requiredXp;
     await userLevelData.save();
   },
 };

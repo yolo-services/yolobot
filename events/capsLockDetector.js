@@ -6,7 +6,7 @@ module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
     const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
-    if (autoModData.enabledFeatures.capsLockDetector) return;
+    if (!autoModData.enabledFeatures.capsLockDetector) return;
 
     if (
       message.author.bot ||
@@ -21,14 +21,16 @@ module.exports = {
     if (capsRatio > 0.7 && messageContent.length > 10) {
       await message.delete();
 
-      message.author.send({
+      await message.author.send({
         embeds: [
           new EmbedBuilder()
             .setColor(mConfig.embedColorError)
             .setTitle("Message removed")
             .setDescription(
               `Your message on the **${message.guild.name}** server was deleted for using excessive capital letters.`
-            ),
+            )
+            .addFields({ name: "Message", value: message.content })
+            .setTimestamp(),
         ],
       });
 
