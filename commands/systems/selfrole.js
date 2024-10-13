@@ -114,13 +114,30 @@ module.exports = {
   async execute(client, interaction) {
     const subcommand = interaction.options.getSubcommand();
 
+    const panelId = interaction.options.getString("panelid");
+    const guildId = interaction.guild.id;
+
+    const role = interaction.options.getRole("role");
+    const label = interaction.options.getString("label");
+    const style = interaction.options.getString("style").toUpperCase();
+
+    const title = interaction.options.getString("title") || "Selfrole Panel";
+    const description =
+      interaction.options.getString("description") ||
+      "Click the buttons to assign roles";
+
+    const panel = await RolePanel.findOne({
+      panelId,
+      guildId: interaction.guild.id,
+    });
+    if (subcommand !== "create" && !panel) {
+      return interaction.reply("Panel not found");
+    }
+
     if (subcommand === "create") {
-      const panelId = interaction.options.getString("panelid");
-      const title = interaction.options.getString("title") || "Selfrole Panel";
-      const description =
-        interaction.options.getString("description") ||
-        "Click the buttons to assign roles";
-      const guildId = interaction.guild.id;
+      if (panel) {
+        return interaction.reply(`Panel with id \`${panelId}\` already exist`);
+      }
 
       const newPanel = new RolePanel({
         panelId,
@@ -136,16 +153,6 @@ module.exports = {
         ephemeral: true,
       });
     } else if (subcommand === "edit") {
-      const panelId = interaction.options.getString("panelid");
-
-      const panel = await RolePanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-      });
-      if (!panel) {
-        return interaction.reply("Panel not found");
-      }
-
       const modal = new ModalBuilder()
         .setCustomId(`edit-panel_${panelId}`)
         .setTitle("Edit Selfrole Panel");
@@ -169,17 +176,13 @@ module.exports = {
 
       return interaction.showModal(modal);
     } else if (subcommand === "addrole") {
-      const panelId = interaction.options.getString("panelid");
-      const role = interaction.options.getRole("role");
-      const label = interaction.options.getString("label");
-      const style = interaction.options.getString("style").toUpperCase();
+      const roleExists = panel.roles.some((role) => role.roleId === role.id);
 
-      const panel = await RolePanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-      });
-      if (!panel) {
-        return interaction.reply("Panel not found");
+      if (roleExists) {
+        return interaction.reply({
+          content: `Role ${role} has been already added to panel \`${panelId}\``,
+          ephemeral: true,
+        });
       }
 
       panel.roles.push({
@@ -194,18 +197,6 @@ module.exports = {
         ephemeral: true,
       });
     } else if (subcommand === "removerole") {
-      const panelId = interaction.options.getString("panelid");
-      const role = interaction.options.getRole("role");
-
-      const panel = await RolePanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-      });
-
-      if (!panel) {
-        return interaction.reply("Panel not found");
-      }
-
       const roleIndex = panel.roles.findIndex((r) => r.roleId === role.id);
       if (roleIndex === -1) {
         return interaction.reply("Role not found in this panel");
@@ -215,20 +206,10 @@ module.exports = {
       await panel.save();
 
       return interaction.reply({
-        content: `Role <@${role.id}> removed from panel \`${panelId}\``,
+        content: `Role ${role} removed from panel \`${panelId}\``,
         ephemeral: true,
       });
     } else if (subcommand === "send") {
-      const panelId = interaction.options.getString("panelid");
-      const panel = await RolePanel.findOne({
-        panelId,
-        guildId: interaction.guild.id,
-      });
-
-      if (!panel) {
-        return interaction.reply("Panel not found");
-      }
-
       const row = new ActionRowBuilder();
       panel.roles.forEach((roleData) => {
         row.addComponents(

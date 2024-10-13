@@ -136,8 +136,11 @@ module.exports = {
       return interaction.reply("Panel not found");
     }
 
-    // Create a new ticket panel
     if (subcommand === "create") {
+      if (panel) {
+        return interaction.reply(`Panel with id \`${panelId}\` already exist`);
+      }
+
       const newPanel = new TicketPanel({
         panelId,
         guildId: interaction.guild.id,
@@ -149,10 +152,16 @@ module.exports = {
 
       await newPanel.save();
       await interaction.reply(`Ticket panel \`${panelId}\` created!`);
-    }
+    } else if (subcommand === "addtopic") {
+      const topicExists = panel.topics.some((topic) => topic.label === label);
 
-    // Add a topic to an existing ticket panel
-    else if (subcommand === "addtopic") {
+      if (topicExists) {
+        return interaction.reply({
+          content: `Topic ${label} has been already added to panel \`${panelId}\``,
+          ephemeral: true,
+        });
+      }
+
       panel.topics.push({ label, description });
       await panel.save();
 
@@ -160,20 +169,20 @@ module.exports = {
         `Topic **${label}** added to panel \`${panelId}\``
       );
     } else if (subcommand === "removetopic") {
-      await TicketPanel.findOneAndUpdate(
-        { panelId: panelId }, // Znajdź panel po panelId
-        { $pull: { topics: { label: label } } }, // Usuń temat z pasującym label
-        { new: true } // Zwróć zaktualizowany dokument
+      const topicIndex = panel.topics.findIndex(
+        (topic) => topic.label === label
       );
+      if (topicIndex === -1) {
+        return interaction.reply("Topic not found in this panel");
+      }
+
+      panel.topics.splice(topicIndex, 1);
       await panel.save();
 
       await interaction.reply(
         `Topic **${label}** removed from panel \`${panelId}\``
       );
-    }
-
-    // Send the ticket panel as a SelectMenu
-    else if (subcommand === "send") {
+    } else if (subcommand === "send") {
       const row = new ActionRowBuilder();
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId(`select-ticket-topic_${panelId}`)

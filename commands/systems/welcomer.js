@@ -32,7 +32,7 @@ module.exports = {
         .setDescription("change welcomer system options!")
         .addChannelOption((option) =>
           option
-            .setName("newchannel")
+            .setName("channel")
             .setDescription("New messages and notifications channel!")
         )
     )
@@ -41,68 +41,58 @@ module.exports = {
     const guildId = interaction.guild.id;
     const subcommand = interaction.options.getSubcommand();
     const channel = interaction.options.getChannel("channel");
-    const newchannel = interaction.options.getChannel("newchannel");
 
-    switch (subcommand) {
-      case "create":
+    if (subcommand === "create") {
+      let welcomerConfig = await Welcomer.findOne({ guildId });
+
+      if (welcomerConfig) {
+        return interaction.reply({
+          content:
+            "You have already created welcomer channel! Want to change? Use `/welcomer setup channel:`",
+          ephemeral: true,
+        });
+      }
+
+      welcomerConfig = new Welcomer({
+        guildId,
+        welcomerChannelId: channel.id,
+      });
+      await welcomerConfig.save();
+
+      await interaction.reply({
+        content: `Welcomer channel has been set to ${channel.name}`,
+        ephemeral: true,
+      });
+    } else if (subcommand === "setup") {
+      if (channel) {
         let welcomerConfig = await Welcomer.findOne({ guildId });
 
-        if (welcomerConfig) {
-          return interaction.reply({
-            content:
-              "You have already created welcomer channel! Want to change? Use `/welcomer setup channel:`",
-            ephemeral: true,
+        if (!welcomerConfig) {
+          welcomerConfig = new Welcomer({
+            guildId,
+            welcomerChannelId: channel.id,
           });
         }
 
-        welcomerConfig = new Welcomer({
-          guildId,
-          welcomerChannelId: channel.id,
-        });
+        welcomerConfig.welcomerChannelId = channel.id;
         await welcomerConfig.save();
 
-        await interaction.reply({
-          content: `Welcomer channel has been set to ${channel.name}`,
+        return interaction.reply({
+          content: `New welcomer channel has been set to <#${channel.id}>`,
           ephemeral: true,
         });
-        break;
-      case "setup":
-        if (newchannel) {
-          let welcomerConfig = await Welcomer.findOne({ guildId });
+      }
+      const setupEmbed = new EmbedBuilder()
+        .setTitle("Welcomer System")
+        .setDescription("Choose an action to setup a new messages")
+        .setColor(mConfig.embedColorPrimary);
 
-          if (!welcomerConfig) {
-            welcomerConfig = new Welcomer({
-              guildId,
-              welcomerChannelId: newchannel.id,
-            });
-          }
+      const join = joinWelcomerButton.createButton();
+      const leave = leaveWelcomerButton.createButton();
+      const cancel = cancelButton.createButton();
 
-          welcomerConfig.welcomerChannelId = newchannel.id;
-          await welcomerConfig.save();
-
-          return interaction.reply({
-            content: `New welcomer channel has been set to <#${newchannel.id}>`,
-            ephemeral: true,
-          });
-        }
-        const setupEmbed = new EmbedBuilder()
-          .setTitle("Welcomer System")
-          .setDescription("Choose an action to setup a new messages")
-          .setColor(mConfig.embedColorPrimary);
-
-        const join = joinWelcomerButton.createButton();
-        const leave = leaveWelcomerButton.createButton();
-        const cancel = cancelButton.createButton();
-
-        const row = new ActionRowBuilder().addComponents(join, leave, cancel);
-        await interaction.reply({ embeds: [setupEmbed], components: [row] });
-        break;
-      default:
-        await interaction.reply({
-          content: "Invalid subcommand!",
-          ephemeral: true,
-        });
-        break;
+      const row = new ActionRowBuilder().addComponents(join, leave, cancel);
+      await interaction.reply({ embeds: [setupEmbed], components: [row] });
     }
   },
 };

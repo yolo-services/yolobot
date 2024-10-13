@@ -20,10 +20,14 @@ const client = new Client({
 client.commands = new Collection();
 const commandHandler = require("./handlers/commandHandler");
 const eventHandler = require("./handlers/eventHandler");
+
 const deployCommands = require("./scripts/deployCommands");
+const { checkGiveaways } = require("./scripts/giveawayChecker");
 
 commandHandler(client);
 eventHandler(client);
+
 deployCommands(client);
+setInterval(() => checkGiveaways(client), 6000);
 
 client.login(TOKEN);

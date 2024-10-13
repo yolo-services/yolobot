@@ -19,6 +19,7 @@ const Guild = require("../models/guild");
 const Welcomer = require("../models/welcomer");
 const RolePanel = require("../models/rolePanel");
 const TicketPanel = require("../models/ticketPanel");
+const Giveaway = require("../models/giveaway");
 
 const allowedGuilds = config.allowedGuilds;
 const allowedChannels = config.allowedChannels;
@@ -42,7 +43,6 @@ module.exports = {
     } */
 
     const { customId } = interaction;
-    console.log(customId);
 
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
@@ -102,6 +102,31 @@ module.exports = {
         modal.addComponents(row);
 
         await interaction.showModal(modal);
+      } else if (interaction.customId.startsWith("giveaway-join")) {
+        const giveawayId = interaction.customId.split("_")[1];
+        const giveaway = await Giveaway.findOne({ giveawayId });
+
+        if (!giveaway || !giveaway.isActive) {
+          return interaction.reply({
+            content: "This giveaway is no longer active.",
+            ephemeral: true,
+          });
+        }
+
+        if (giveaway.participants.includes(interaction.user.id)) {
+          return interaction.reply({
+            content: "You have already joined this giveaway!",
+            ephemeral: true,
+          });
+        }
+
+        giveaway.participants.push(interaction.user.id);
+        await giveaway.save();
+
+        return interaction.reply({
+          content: "You have successfully joined the giveaway!",
+          ephemeral: true,
+        });
       } else {
         const button = client.buttons.get(customId);
 
