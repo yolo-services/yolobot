@@ -10,26 +10,21 @@ const mConfig = require("../messageConfig.json");
 module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
-    // Sprawdzanie, czy wiadomość pochodzi od bota lub użytkownika z uprawnieniami administratora
     if (
-      message.author.bot //||
-      //message.member.permissions.has(PermissionFlagsBits.Administrator)
+      message.author.bot ||
+      message.member.permissions.has(PermissionFlagsBits.Administrator)
     )
       return;
 
-    // Wyrażenie regularne, które sprawdza, czy wiadomość zawiera link
     const linkRegex = /(https?:\/\/[^\s]+)/g;
 
-    // Jeśli wiadomość zawiera linki
     if (linkRegex.test(message.content)) {
       const foundLinks = message.content.match(linkRegex);
 
-      // Pobieramy dane o dozwolonych domenach z bazy dla danego serwera
       const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
 
       let isAllowed = false;
 
-      // Sprawdzamy, czy linki znajdują się na liście dozwolonych domen
       for (const link of foundLinks) {
         if (
           autoModData &&
@@ -40,11 +35,9 @@ module.exports = {
         }
       }
 
-      // Jeśli żaden link nie jest dozwolony, usuwamy wiadomość
       if (!isAllowed) {
         await message.delete();
 
-        // Wysyłamy prywatną wiadomość do użytkownika, który dodał niedozwolony link
         message.author.send({
           embeds: [
             new EmbedBuilder()
@@ -57,7 +50,6 @@ module.exports = {
           ],
         });
 
-        // Logowanie do odpowiedniego kanału (jeśli jest skonfigurowany)
         if (autoModData && autoModData.channelId) {
           const logChannel = message.guild.channels.cache.get(
             autoModData.channelId

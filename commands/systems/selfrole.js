@@ -148,7 +148,7 @@ module.exports = {
       });
 
       await newPanel.save();
-      return interaction.reply({
+      await interaction.reply({
         content: `Selfrole panel with ID \`${panelId}\` created! Use \`/selfrole addrole\` to add roles`,
         ephemeral: true,
       });
@@ -174,7 +174,7 @@ module.exports = {
         new ActionRowBuilder().addComponents(descriptionInput)
       );
 
-      return interaction.showModal(modal);
+      await interaction.showModal(modal);
     } else if (subcommand === "addrole") {
       const roleExists = panel.roles.some((role) => role.roleId === role.id);
 
@@ -205,7 +205,7 @@ module.exports = {
       panel.roles.splice(roleIndex, 1);
       await panel.save();
 
-      return interaction.reply({
+      await interaction.reply({
         content: `Role ${role} removed from panel \`${panelId}\``,
         ephemeral: true,
       });
@@ -225,7 +225,7 @@ module.exports = {
         .setDescription(panel.description)
         .setColor(mConfig.embedColorPrimary);
 
-      return interaction.reply({
+      await interaction.reply({
         embeds: [embed],
         components: [row],
       });

@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
 const rolePanelSchema = new mongoose.Schema({
-  panelId: String,
-  guildId: String,
-  title: String,
-  description: String,
+  panelId: { type: String, required: true },
+  guildId: { type: String, required: true },
+  title: { type: String, required: false },
+  description: { type: String, required: false },
   roles: [
     {
-      label: String,
-      roleId: String,
-      buttonStyle: String,
+      label: { type: String, required: false },
+      roleId: { type: String, required: true },
+      buttonStyle: { type: String, required: false },
     },
   ],
 });

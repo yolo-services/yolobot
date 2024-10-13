@@ -39,7 +39,9 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
     const guildId = interaction.guild.id;
+
     const subcommand = interaction.options.getSubcommand();
+
     const channel = interaction.options.getChannel("channel");
 
     if (subcommand === "create") {

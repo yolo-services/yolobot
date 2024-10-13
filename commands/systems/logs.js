@@ -40,73 +40,50 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
     const guildId = interaction.guild.id;
+    
     const subcommand = interaction.options.getSubcommand();
+
     const channel = interaction.options.getChannel("channel");
     const archives = interaction.options.getChannel("archives");
 
-    switch (subcommand) {
-      case "create":
-        let guildConfig = await Guild.findOne({ guildId });
+    let guildConfig = await Guild.findOne({ guildId });
 
-        if (guildConfig) {
-          return interaction.reply({
-            content:
-              "You have already created logs channel! Want to change? Use `/logs setup channel:`",
-            ephemeral: true,
-          });
-        }
+    if (subcommand === "create") {
+      if (guildConfig) {
+        return interaction.reply({
+          content:
+            "You have already created logs channel! Want to change? Use `/logs setup channel:`",
+          ephemeral: true,
+        });
+      }
 
+      guildConfig = new Guild({
+        guildId,
+        logChannelId: channel.id,
+      });
+      if (archives) guildConfig.archiveChannelId = archives.id;
+      await guildConfig.save();
+
+      await interaction.reply({
+        content: `Logs channel has been set to <#${channel.id}>`,
+        ephemeral: true,
+      });
+    } else if (subcommand == "edit") {
+      if (!guildConfig) {
         guildConfig = new Guild({
           guildId,
           logChannelId: channel.id,
         });
-        if (archives) guildConfig.archiveChannelId = archives.id;
-        await guildConfig.save();
+      }
 
-        await interaction.reply({
-          content: `Logs channel has been set to <#${channel.id}>`,
-          ephemeral: true,
-        });
-        break;
-      case "edit":
-        if (channel) {
-          let guildConfig = await Guild.findOne({ guildId });
+      guildConfig.logChannelId = channel.id;
+      if (archives) guildConfig.archiveChannelId = archives.id;
+      await guildConfig.save();
 
-          if (!guildConfig) {
-            guildConfig = new Guild({
-              guildId,
-              logChannelId: channel.id,
-            });
-          }
-
-          guildConfig.logChannelId = channel.id;
-          if (archives) guildConfig.archiveChannelId = archives.id;
-          await guildConfig.save();
-
-          return interaction.reply({
-            content: `New logs channel has been set to <#${channel.id}>`,
-            ephemeral: true,
-          });
-        }
-
-        const setupEmbed = new EmbedBuilder()
-          .setTitle("Logs System")
-          .setDescription("Choose an action to setup a logs system")
-          .setColor(mConfig.embedColorPrimary);
-
-        // const join = joinWelcomerButton.createButton();
-        // const leave = leaveWelcomerButton.createButton();
-        // const cancel = cancelButton.createButton();
-
-        // const row = new ActionRowBuilder().addComponents(join, leave, cancel);
-        await interaction.reply({ embeds: [setupEmbed] });
-        break;
-      default:
-        await interaction.reply({
-          content: "Invalid subcommand!",
-          ephemeral: true,
-        });
-        break;
+      await interaction.reply({
+        content: `New logs channel has been set to <#${channel.id}>`,
+        ephemeral: true,
+      });
     }
   },
 };

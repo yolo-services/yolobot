@@ -111,7 +111,7 @@ module.exports = {
       guildConfig.domains.push(allowedlink);
       await guildConfig.save();
 
-      return interaction.reply({
+      await interaction.reply({
         content: `Domain **${allowedlink}** has been added to the list of allowed domains`,
         ephemeral: true,
       });
