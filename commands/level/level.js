@@ -4,6 +4,7 @@ const {
   PermissionFlagsBits,
 } = require("discord.js");
 const UserLevel = require("../../models/userLevel");
+const Guild = require("../../models/guild");
 const mConfig = require("../../messageConfig.json");
 
 module.exports = {
@@ -18,6 +19,14 @@ module.exports = {
 
   async execute(client, interaction) {
     const target = interaction.options.getUser("user") || interaction.user;
+
+    const guildData = await Guild.findOne({ guildId: interaction.guild.id });
+    if (!guildData.enabledSystems.level) {
+      return interaction.reply({
+        content: "This system is disabled! Use `/leveling toggle enabled:`",
+        ephemeral: true,
+      });
+    }
 
     const userData =
       (await UserLevel.findOne({

@@ -4,7 +4,6 @@ const guildSchema = new mongoose.Schema({
   guildId: { type: String, required: true },
   logChannelId: { type: String, required: false },
   archiveChannelId: { type: String, required: false },
-  levelChannelId: { type: String, required: false },
   enabledSystems: {
     autoMod: { type: Boolean, default: false },
     giveaway: { type: Boolean, default: false },

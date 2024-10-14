@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const UserLevel = require("../../models/userLevel"); // Model MongoDB do przechowywania danych o poziomach
+const UserLevel = require("../../models/userLevel");
+const Guild = require("../../models/guild");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -63,6 +64,14 @@ module.exports = {
 
     const user = interaction.options.getUser("user");
     const amount = interaction.options.getInteger("amount");
+
+    const guildData = await Guild.findOne({ guildId: interaction.guild.id });
+    if (!guildData.enabledSystems.level) {
+      return interaction.reply({
+        content: "This system is disabled! Use `/leveling toggle enabled:`",
+        ephemeral: true,
+      });
+    }
 
     let userData =
       (await UserLevel.findOne({
