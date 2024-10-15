@@ -9,7 +9,8 @@ module.exports = {
   async execute(client, message) {
     const guildData = await Guild.findOne({ guildId: message.guild.id });
     const levelingData = await Leveling.findOne({ guildId: message.guild.id });
-    if (message.author.bot || !guildData.enabledSystems.level) return;
+    if (message.author.bot || !guildData || !guildData.enabledSystems.level)
+      return;
 
     const xpToAdd = 5;
     const userLevelData =
@@ -18,10 +19,12 @@ module.exports = {
         guildId: message.guild.id,
       })) ||
       new UserLevel({ userId: message.author.id, guildId: message.guild.id });
- 
+
     userLevelData.exp += xpToAdd;
     const requiredXp = userLevelData.level * 100;
-    const logChannel = message.guild.channels.cache.get(levelingData?.channelId);
+    const logChannel = message.guild.channels.cache.get(
+      levelingData?.channelId
+    );
     const levelChannel = logChannel || message.channel;
 
     if (userLevelData.exp >= requiredXp) {
@@ -29,7 +32,7 @@ module.exports = {
       userLevelData.exp -= requiredXp;
 
       userLevelData.nextLevelExp = (userLevelData.level + 1) * 100;
-      
+
       const embed = new EmbedBuilder()
         .setColor(mConfig.embedColorSuccess)
         .setTitle("Level Up!")
