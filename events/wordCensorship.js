@@ -6,7 +6,7 @@ module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
     const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
-    if (!autoModData.enabledFeatures.wordCensorship) return;
+    if (!autoModData || !autoModData.enabledFeatures.wordCensorship) return;
 
     if (
       message.author.bot ||

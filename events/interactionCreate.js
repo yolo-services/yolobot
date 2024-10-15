@@ -341,6 +341,37 @@ module.exports = {
 
           await archiveChannel.send({ embeds: [closeEmbed] });
         }
+      } else if (interaction.customId === "embed-modal") {
+        const title = interaction.fields.getTextInputValue("embedTitle");
+        const description =
+          interaction.fields.getTextInputValue("embedDescription");
+        const color =
+          interaction.fields.getTextInputValue("embedColor") ||
+          mConfig.embedColorPrimary;
+        const thumbnail =
+          interaction.fields.getTextInputValue("embedThumbnail") || null;
+        const footer =
+          interaction.fields.getTextInputValue("embedFooter") || null;
+
+        const embed = new EmbedBuilder().setColor(color).setTimestamp();
+
+        if (title) {
+          embed.setTitle(title);
+        }
+
+        if (description) {
+          embed.setDescription(description);
+        }
+
+        if (thumbnail) {
+          embed.setThumbnail(thumbnail);
+        }
+
+        if (footer) {
+          embed.setFooter({ text: footer });
+        }
+
+        await interaction.reply({ embeds: [embed] });
       } else {
         await interaction.reply({
           content: "This modal is not recognized",
