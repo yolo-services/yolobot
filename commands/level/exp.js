@@ -66,7 +66,7 @@ module.exports = {
     const amount = interaction.options.getInteger("amount");
 
     const guildData = await Guild.findOne({ guildId: interaction.guild.id });
-    if (!guildData.enabledSystems.level) {
+    if (!guildData || !guildData.enabledSystems.level) {
       return interaction.reply({
         content: "This system is disabled! Use `/leveling toggle enabled:`",
         ephemeral: true,

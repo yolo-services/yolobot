@@ -140,7 +140,8 @@ module.exports = {
 
     const enabled = interaction.options.getBoolean("enabled");
 
-    let guildData = await Guild.findOne({ guildId: interaction.guild.id });
+    let guildData =
+      (await Guild.findOne({ guildId })) || new Guild({ guildId });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.selfrole) {
       return interaction.reply(

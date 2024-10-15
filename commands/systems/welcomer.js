@@ -18,23 +18,12 @@ module.exports = {
     .setDescription("Setup welcome and leave notifications on your server")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("create")
-        .setDescription("create new welcomer system")
+        .setName("set")
+        .setDescription("Setup welcomer system")
         .addChannelOption((option) =>
           option
             .setName("channel")
             .setDescription("messages and notifications channel")
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("setup")
-        .setDescription("change welcomer system options!")
-        .addChannelOption((option) =>
-          option
-            .setName("channel")
-            .setDescription("New messages and notifications channel!")
         )
     )
     .addSubcommand((subcommand) =>
@@ -60,33 +49,13 @@ module.exports = {
     let guildData = await Guild.findOne({ guildId: interaction.guild.id });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.welcomer) {
-      return interaction.reply(
-        "This system is disabled! Use `/welcomer toggle enabled:`"
-      );
-    }
-
-    if (subcommand === "create") {
-      let welcomerConfig = await Welcomer.findOne({ guildId });
-
-      if (welcomerConfig) {
-        return interaction.reply({
-          content:
-            "You have already created welcomer channel! Want to change? Use `/welcomer setup channel:`",
-          ephemeral: true,
-        });
-      }
-
-      welcomerConfig = new Welcomer({
-        guildId,
-        welcomerChannelId: channel.id,
-      });
-      await welcomerConfig.save();
-
-      await interaction.reply({
-        content: `Welcomer channel has been set to ${channel.name}`,
+      return interaction.reply({
+        content: "This system is disabled! Use `/welcomer toggle enabled:`",
         ephemeral: true,
       });
-    } else if (subcommand === "setup") {
+    }
+
+    if (subcommand === "set") {
       if (channel) {
         let welcomerConfig = await Welcomer.findOne({ guildId });
 
@@ -101,7 +70,7 @@ module.exports = {
         await welcomerConfig.save();
 
         return interaction.reply({
-          content: `New welcomer channel has been set to <#${channel.id}>`,
+          content: `Welcomer channel has been set to <#${channel.id}>`,
           ephemeral: true,
         });
       }
@@ -120,9 +89,12 @@ module.exports = {
       guildData.enabledSystems.welcomer = enabled;
       await guildData.save();
 
-      return interaction.reply(
-        `The Welcomer system has been ${enabled ? "enabled" : "disabled"}`
-      );
+      return interaction.reply({
+        content: `The Welcomer system has been ${
+          enabled ? "enabled" : "disabled"
+        }`,
+        ephemeral: true,
+      });
     }
   },
 };

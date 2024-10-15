@@ -13,23 +13,12 @@ module.exports = {
     .setDescription("Setup automod on your server")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("create")
-        .setDescription("Create new automod system!")
+        .setName("set")
+        .setDescription("Setup new automod system!")
         .addChannelOption((option) =>
           option
             .setName("channel")
             .setDescription("AutoMod notifications channel")
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("edit")
-        .setDescription("Change AutoMod system options")
-        .addChannelOption((option) =>
-          option
-            .setName("channel")
-            .setDescription("New AutoMod notifications channel")
             .setRequired(true)
         )
     )
@@ -103,37 +92,17 @@ module.exports = {
     const featureName = interaction.options.getString("name");
     const enabled = interaction.options.getBoolean("enabled");
 
-    let guildData = await Guild.findOne({ guildId });
+    let guildData =
+      (await Guild.findOne({ guildId })) || new Guild({ guildId });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.autoMod) {
-      return interaction.reply(
-        "This system is disabled! Use `/automod toggle enabled:`"
-      );
-    }
-
-    if (subcommand === "create") {
-      let guildConfig = await AutoMod.findOne({ guildId });
-
-      if (guildConfig) {
-        return interaction.reply({
-          content:
-            "AutoMod is already set up for this server! Want to edit? Use `/automod edit`",
-          ephemeral: true,
-        });
-      }
-
-      guildConfig = new AutoMod({
-        guildId,
-        channelId: channel.id,
-        domains: [],
-      });
-      await guildConfig.save();
-
-      await interaction.reply({
-        content: `Logs channel has been set to <#${channel.id}>`,
+      return interaction.reply({
+        content: "This system is disabled! Use `/automod toggle enabled:`",
         ephemeral: true,
       });
-    } else if (subcommand === "edit") {
+    }
+
+    if (subcommand === "set") {
       let guildConfig = await AutoMod.findOne({ guildId });
 
       if (!guildConfig) {
@@ -142,13 +111,14 @@ module.exports = {
           channelId: channel.id,
           domains: [],
         });
+        await guildConfig.save();
+      } else {
+        guildConfig.channelId = channel.id;
+        await guildConfig.save();
       }
 
-      guildConfig.channelId = channel.id;
-      await guildConfig.save();
-
       await interaction.reply({
-        content: `New AutoMod channel has been set to <#${channel.id}>`,
+        content: `AutoMod channel has been set to <#${channel.id}>`,
         ephemeral: true,
       });
     } else if (subcommand === "domains") {
@@ -156,8 +126,7 @@ module.exports = {
 
       if (!guildConfig) {
         return interaction.reply({
-          content:
-            "AutoMod is not set up for this server! Use `/automod create`",
+          content: "AutoMod is not set up for this server! Use `/automod set`",
           ephemeral: true,
         });
       }
@@ -181,8 +150,7 @@ module.exports = {
 
       if (!guildConfig) {
         return interaction.reply({
-          content:
-            "AutoMod is not set up for this server! Use `/automod create`",
+          content: "AutoMod is not set up for this server! Use `/automod set`",
           ephemeral: true,
         });
       }
@@ -207,9 +175,10 @@ module.exports = {
       });
 
       if (!autoModData) {
-        return interaction.reply(
-          "AutoMod is not set up for this server! Use `/automod create`"
-        );
+        return interaction.reply({
+          content: "AutoMod is not set up for this server! Use `/automod set`",
+          ephemeral: true,
+        });
       }
 
       autoModData.enabledFeatures[featureName] = enabled;
@@ -223,9 +192,12 @@ module.exports = {
       guildData.enabledSystems.autoMod = enabled;
       await guildData.save();
 
-      return interaction.reply(
-        `The AutoMod system has been ${enabled ? "enabled" : "disabled"}.`
-      );
+      return interaction.reply({
+        content: `The AutoMod system has been ${
+          enabled ? "enabled" : "disabled"
+        }`,
+        ephemeral: true,
+      });
     }
   },
 };

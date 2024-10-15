@@ -13,23 +13,12 @@ module.exports = {
     .setDescription("Setup leveling on your server")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("create")
-        .setDescription("Create new leveling system!")
+        .setName("set")
+        .setDescription("Setup new leveling system!")
         .addChannelOption((option) =>
           option
             .setName("channel")
             .setDescription("Leveling notifications channel")
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("edit")
-        .setDescription("Change leveling system options")
-        .addChannelOption((option) =>
-          option
-            .setName("channel")
-            .setDescription("New leveling notifications channel")
             .setRequired(true)
         )
     )
@@ -52,7 +41,8 @@ module.exports = {
     const channel = interaction.options.getChannel("channel");
     const enabled = interaction.options.getBoolean("enabled");
 
-    let guildData = await Guild.findOne({ guildId });
+    let guildData =
+      (await Guild.findOne({ guildId })) || new Guild({ guildId });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.level) {
       return interaction.reply({
@@ -61,28 +51,7 @@ module.exports = {
       });
     }
 
-    if (subcommand === "create") {
-      let guildConfig = await Leveling.findOne({ guildId });
-
-      if (guildConfig) {
-        return interaction.reply({
-          content:
-            "Leveling is already set up for this server! Want to edit? Use `/leveling edit`",
-          ephemeral: true,
-        });
-      }
-
-      guildConfig = new Leveling({
-        guildId,
-        channelId: channel.id,
-      });
-      await guildConfig.save();
-
-      await interaction.reply({
-        content: `Leveling channel has been set to <#${channel.id}>`,
-        ephemeral: true,
-      });
-    } else if (subcommand === "edit") {
+    if (subcommand === "set") {
       let guildConfig = await Leveling.findOne({ guildId });
 
       if (!guildConfig) {
@@ -90,13 +59,14 @@ module.exports = {
           guildId,
           channelId: channel.id,
         });
+        await guildConfig.save();
+      } else {
+        guildConfig.channelId = channel.id;
+        await guildConfig.save();
       }
 
-      guildConfig.channelId = channel.id;
-      await guildConfig.save();
-
       await interaction.reply({
-        content: `New leveling channel has been set to <#${channel.id}>`,
+        content: `Leveling channel has been set to <#${channel.id}>`,
         ephemeral: true,
       });
     } else if (subcommand === "toggle") {

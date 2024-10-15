@@ -12,26 +12,13 @@ module.exports = {
     .setDescription("Setup logs and notifications on your server!")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("create")
-        .setDescription("Create new logs system!")
+        .setName("set")
+        .setDescription("Setup new logs system!")
         .addChannelOption((option) =>
           option
             .setName("channel")
             .setDescription("Messages and notifications channel")
             .setRequired(true)
-        )
-        .addChannelOption((option) =>
-          option.setName("archives").setDescription("Tickets archives channel")
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("edit")
-        .setDescription("Change logs system options!")
-        .addChannelOption((option) =>
-          option
-            .setName("newchannel")
-            .setDescription("New messages and notifications channel!")
         )
         .addChannelOption((option) =>
           option.setName("archives").setDescription("Tickets archives channel")
@@ -57,59 +44,37 @@ module.exports = {
     const channel = interaction.options.getChannel("channel");
     const archives = interaction.options.getChannel("archives");
 
-    let guildConfig = await Guild.findOne({ guildId });
+    let guildConfig =
+      (await Guild.findOne({ guildId })) || new Guild({ guildId });
 
     const enabled = interaction.options.getBoolean("enabled");
 
     if (subcommand !== "toggle" && !guildConfig.enabledSystems.logs) {
-      return interaction.reply(
-        "This system is disabled! Use `/logs toggle enabled:`"
-      );
-    }
-
-    if (subcommand === "create") {
-      if (guildConfig) {
-        return interaction.reply({
-          content:
-            "You have already created logs channel! Want to change? Use `/logs setup channel:`",
-          ephemeral: true,
-        });
-      }
-
-      guildConfig = new Guild({
-        guildId,
-        logChannelId: channel.id,
-      });
-      if (archives) guildConfig.archiveChannelId = archives.id;
-      await guildConfig.save();
-
-      await interaction.reply({
-        content: `Logs channel has been set to <#${channel.id}>`,
+      return interaction.reply({
+        content: "This system is disabled! Use `/logs toggle enabled:`",
         ephemeral: true,
       });
-    } else if (subcommand == "edit") {
-      if (!guildConfig) {
-        guildConfig = new Guild({
-          guildId,
-          logChannelId: channel.id,
-        });
-      }
+    }
 
-      guildConfig.logChannelId = channel.id;
+    if (subcommand === "set") {
+      if (channel) guildConfig.logChannelId = channel.id;
       if (archives) guildConfig.archiveChannelId = archives.id;
       await guildConfig.save();
 
       await interaction.reply({
-        content: `New logs channel has been set to <#${channel.id}>`,
+        content: `Logs channel has been set to <#${channel.id}>${
+          archives && `, Archives channel has been set to <#${archives.id}>`
+        }`,
         ephemeral: true,
       });
     } else if (subcommand === "toggle") {
       guildConfig.enabledSystems.logs = enabled;
       await guildConfig.save();
 
-      return interaction.reply(
-        `The Logs system has been ${enabled ? "enabled" : "disabled"}`
-      );
+      return interaction.reply({
+        content: `The Logs system has been ${enabled ? "enabled" : "disabled"}`,
+        ephemeral: true,
+      });
     }
   },
 };

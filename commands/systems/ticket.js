@@ -141,7 +141,9 @@ module.exports = {
 
     const enabled = interaction.options.getBoolean("enabled");
 
-    let guildData = await Guild.findOne({ guildId: interaction.guild.id });
+    let guildData =
+      (await Guild.findOne({ guildId: interaction.guild.id })) ||
+      new Guild({ guildId: interaction.guild.id });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.ticket) {
       return interaction.reply(
