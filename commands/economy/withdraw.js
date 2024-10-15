@@ -7,7 +7,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("withdraw")
     .setDescription("Withdraw money from your bank")
-    .addIntegerOption((option) =>
+    .addStringOption((option) =>
       option
         .setName("amount")
         .setDescription("Amount to withdraw")
@@ -15,7 +15,7 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
-    const amount = interaction.options.getInteger("amount");
+    const amountInput = interaction.options.getString("amount");
 
     const guildData = await Guild.findOne({ guildId: interaction.guild.id });
     if (!guildData || !guildData.enabledSystems.economy) {
@@ -39,13 +39,36 @@ module.exports = {
         guildId: interaction.guild.id,
       });
 
-    if (userData.bank < amount) {
-      return interaction.reply({
-        content: "You don't have enough money in your bank to withdraw",
-        ephemeral: true,
-      });
+    let amount;
+
+    if (amountInput.toLowerCase() === "all") {
+      // Użytkownik chce wypłacić całą kasę
+      amount = userData.bank;
+      if (amount <= 0) {
+        return interaction.reply({
+          content: "You don't have any money in your bank to withdraw",
+          ephemeral: true,
+        });
+      }
+    } else {
+      // Użytkownik wprowadził kwotę do wypłaty
+      amount = parseInt(amountInput);
+      if (isNaN(amount) || amount <= 0) {
+        return interaction.reply({
+          content: "Please enter a valid amount or 'all'",
+          ephemeral: true,
+        });
+      }
+
+      if (userData.bank < amount) {
+        return interaction.reply({
+          content: "You don't have enough money in your bank to withdraw",
+          ephemeral: true,
+        });
+      }
     }
 
+    // Wypłata środków
     userData.bank -= amount;
     userData.wallet += amount;
     await userData.save();
