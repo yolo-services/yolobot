@@ -12,6 +12,7 @@ const guildSchema = new mongoose.Schema({
     ticket: { type: Boolean, default: false },
     welcomer: { type: Boolean, default: false },
     level: { type: Boolean, default: false },
+    economy: { type: Boolean, default: false },
   },
 });
 
