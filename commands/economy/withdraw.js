@@ -74,7 +74,7 @@ module.exports = {
     await userData.save();
 
     await interaction.reply(
-      `Successfully withdrew ${amount} ${economyData.symbol} from your bank`
+      `Successfully withdrew **${amount} ${economyData.symbol}** from your bank!`
     );
   },
 };

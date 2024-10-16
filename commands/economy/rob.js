@@ -14,7 +14,7 @@ module.exports = {
       option.setName("target").setDescription("User to rob").setRequired(true)
     ),
 
-  async execute(interaction) {
+  async execute(client, interaction) {
     const userId = interaction.user.id;
     const targetUser = interaction.options.getUser("target");
     const currentTime = Date.now();

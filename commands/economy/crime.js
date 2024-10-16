@@ -11,7 +11,7 @@ module.exports = {
     .setName("crime")
     .setDescription("Try to commit a crime and earn money"),
 
-  async execute(interaction) {
+  async execute(client, interaction) {
     const userId = interaction.user.id;
     const currentTime = Date.now();
 

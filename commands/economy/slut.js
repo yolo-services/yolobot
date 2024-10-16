@@ -11,7 +11,7 @@ module.exports = {
     .setName("slut")
     .setDescription("Earn money through questionable means"),
 
-  async execute(interaction) {
+  async execute(client, interaction) {
     const userId = interaction.user.id;
     const currentTime = Date.now();
 

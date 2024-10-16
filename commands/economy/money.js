@@ -122,19 +122,19 @@ module.exports = {
       userData[account] += amount; // Dodawanie do wallet lub bank
       await userData.save();
       return interaction.reply(
-        `Successfully added ${amount} ${economyData.symbol} to ${targetUser.tag}'s ${account}`
+        `Successfully added **${amount} ${economyData.symbol}** to ${targetUser.tag}'s ${account}`
       );
     } else if (subcommand === "set") {
       userData[account] = amount; // Ustawianie wallet lub bank
       await userData.save();
       return interaction.reply(
-        `Successfully set ${targetUser.tag}'s ${account} balance to ${amount} ${economyData.symbol}`
+        `Successfully set ${targetUser.tag}'s ${account} balance to **${amount} ${economyData.symbol}**!`
       );
     } else if (subcommand === "remove") {
       userData[account] = Math.max(0, userData[account] - amount); // Usuwanie z wallet lub bank (nie można zejść poniżej 0)
       await userData.save();
       return interaction.reply(
-        `Successfully removed ${amount} ${economyData.symbol} from ${targetUser.tag}'s ${account}`
+        `Successfully removed **${amount} ${economyData.symbol}** from ${targetUser.tag}'s ${account}`
       );
     }
   },
