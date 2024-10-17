@@ -42,6 +42,11 @@ module.exports = {
           .setColor(mConfig.embedColorSuccess)
           .setTitle(welcomerConfig.welcomeMessage.title)
           .setDescription(welcomerConfig.welcomeMessage.body)
+          .addFields({
+            name: "User",
+            value: `<@${interaction.user.id}>`,
+            inline: true,
+          })
           .setFooter({ text: `${welcomerConfig.welcomeMessage.footer}` });
         welcomeChannel.send({ embeds: [embed] });
       }

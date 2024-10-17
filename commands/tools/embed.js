@@ -4,12 +4,14 @@ const {
   TextInputBuilder,
   TextInputStyle,
   ActionRowBuilder,
+  PermissionFlagsBits,
 } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("embed")
-    .setDescription("Create a custom embed using a modal"),
+    .setDescription("Create a custom embed using a modal")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
   async execute(client, interaction) {
     const modal = new ModalBuilder()
