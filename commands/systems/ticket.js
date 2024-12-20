@@ -28,15 +28,22 @@ module.exports = {
             .setRequired(true)
         )
         .addStringOption((option) =>
-          option.setName("title").setDescription("The title of the panel")
+          option
+            .setName("title")
+            .setDescription("The title of the panel")
+            .setRequired(true)
         )
         .addStringOption((option) =>
           option
-            .setName("descripton")
+            .setName("description")
             .setDescription("The description of the panel")
+            .setRequired(true)
         )
         .addRoleOption((option) =>
-          option.setName("adminrole").setDescription("The admin of ticket role")
+          option
+            .setName("adminrole")
+            .setDescription("The admin of ticket role")
+            .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
@@ -53,6 +60,12 @@ module.exports = {
           option
             .setName("label")
             .setDescription("The label for the topic")
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("emoji")
+            .setDescription("The emoji for the topic menu")
             .setRequired(true)
         )
         .addStringOption((option) =>
@@ -137,6 +150,7 @@ module.exports = {
     const adminRole = interaction.options.getRole("adminrole");
 
     const label = interaction.options.getString("label");
+    const emoji = interaction.options.getString("emoji");
     const description = interaction.options.getString("description");
 
     const enabled = interaction.options.getBoolean("enabled");
@@ -156,7 +170,7 @@ module.exports = {
       guildId: interaction.guild.id,
     });
 
-    if (subcommand !== "create" && !panel) {
+    if (subcommand !== "create" && !panel && subcommand !== "toggle") {
       return interaction.reply("Panel not found");
     }
 
@@ -186,7 +200,7 @@ module.exports = {
         });
       }
 
-      panel.topics.push({ label, description });
+      panel.topics.push({ label, emoji: emoji || "💛", description });
       await panel.save();
 
       await interaction.reply(
@@ -216,7 +230,8 @@ module.exports = {
         selectMenu.addOptions({
           label: topic.label,
           description: topic.description,
-          value: topic.label.toLowerCase(),
+          value: topic.label,
+          emoji: topic.emoji,
         });
       });
 
@@ -228,9 +243,15 @@ module.exports = {
         .setDescription(panel.description)
         .setFooter({ text: `Powered By ${client.user.tag}` });
 
-      await interaction.reply({
+      const channel = interaction.channel;
+      await channel.send({
         embeds: [embed],
         components: [row],
+      });
+
+      await interaction.reply({
+        content: "Panel sent successfully!",
+        ephemeral: true,
       });
     } else if (subcommand === "edit") {
       if (adminRole) {

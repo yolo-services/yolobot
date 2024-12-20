@@ -1,8 +1,8 @@
 {
   "embedColorPrimary": "#FFF000",
-  "embedColorSuccess": "#00D26A",
-  "embedColorWarning": "FFCC4D",
-  "embedColorError": "FB2F61",
+  "embedColorSuccess": "#00FF00",
+  "embedColorWarning": "#FFCC4D",
+  "embedColorError": "#FF0000",
 
   "embedErrorMessage": "An error occurred!",
 

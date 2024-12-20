@@ -10,7 +10,7 @@ const giveawaySchema = new mongoose.Schema({
   winnersCount: { type: Number, required: true },
   participants: [String],
   isActive: { type: Boolean, required: true },
-  channelId: { type: String, required: true },
+  channelId: { type: String, required: false },
 });
 
 module.exports = mongoose.model("Giveaway", giveawaySchema);

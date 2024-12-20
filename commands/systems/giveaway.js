@@ -97,7 +97,8 @@ module.exports = {
     const enabled = interaction.options.getBoolean("enabled");
 
     let guildData =
-      (await Guild.findOne({ guildId: interaction.guild.id })) || new Guild({ guildId: interaction.guild.id });
+      (await Guild.findOne({ guildId: interaction.guild.id })) ||
+      new Guild({ guildId: interaction.guild.id });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.giveaway) {
       return interaction.reply(
@@ -109,13 +110,13 @@ module.exports = {
       giveawayId: giveawayId,
       guildId: interaction.guild.id,
     });
-    if (subcommand !== "create" && !giveaway) {
+    if (subcommand === "send" && !giveaway) {
       return interaction.reply({
         content: "Giveaway not found",
         ephemeral: true,
       });
     }
-    if (subcommand !== "create" && !giveaway.isActive) {
+    if (subcommand === "send" && !giveaway.isActive) {
       return interaction.reply({
         content: "This giveaway is no longer active.",
         ephemeral: true,
@@ -184,14 +185,18 @@ module.exports = {
 
       await interaction.reply({
         content: `Giveaway message has been send to ${giveawayChannel}`,
+        ephemeral: true,
       });
     } else if (subcommand === "toggle") {
       guildData.enabledSystems.giveaway = enabled;
       await guildData.save();
 
-      return interaction.reply(
-        `The Giveaway system has been ${enabled ? "enabled" : "disabled"}`
-      );
+      return interaction.reply({
+        content: `The Giveaway system has been ${
+          enabled ? "enabled" : "disabled"
+        }`,
+        ephemeral: true,
+      });
     }
   },
 };

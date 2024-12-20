@@ -23,12 +23,11 @@ module.exports = {
 
         const kickLog = fetchedLogs.entries.first();
 
-        const bannedUsers = await interaction.guild.bans.fetch();
-        const isBanned = bannedUsers.has(interaction.user.id);
-
         const kickTime = kickLog ? kickLog.createdAt : null;
         const currentTime = new Date();
         const timeDifference = (currentTime - kickTime) / 1000;
+
+        console.log(kickLog);
 
         if (
           kickLog &&
@@ -59,7 +58,7 @@ module.exports = {
               }
             );
           logChannel.send({ embeds: [leaveEmbed] });
-        } else if (!isBanned) {
+        } else {
           const leaveEmbed = new EmbedBuilder()
             .setColor(mConfig.embedColorError)
             .setAuthor({
@@ -85,8 +84,12 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(mConfig.embedColorError)
           .setTitle(welcomerConfig.farewellMessage.title)
-          .setDescription(welcomerConfig.farewellMessage.body)
-          .setFooter({ text: `${welcomerConfig.farewellMessage.footer}` });
+          .setDescription(welcomerConfig.farewellMessage.body);
+
+        if (welcomerConfig.welcomeMessage.footer) {
+          embed.setFooter({ text: `${welcomerConfig.farewellMessage.footer}` });
+        }
+
         welcomeChannel.send({ embeds: [embed] });
       }
     }

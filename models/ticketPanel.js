@@ -13,6 +13,7 @@ const ticketPanelSchema = new Schema({
   topics: [
     {
       label: { type: String, required: true },
+      emoji: { type: String, required: false },
       description: { type: String, required: true },
     },
   ],

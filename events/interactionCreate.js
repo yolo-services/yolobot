@@ -10,8 +10,6 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require("discord.js");
-const fs = require("node:fs");
-const path = require("node:path");
 const config = require("../config.json");
 const mConfig = require("../messageConfig.json");
 
@@ -22,7 +20,6 @@ const TicketPanel = require("../models/ticketPanel");
 const Giveaway = require("../models/giveaway");
 
 const allowedGuilds = config.allowedGuilds;
-const allowedChannels = config.allowedChannels;
 const isDevMode = config.devMode === true;
 
 module.exports = {
@@ -140,13 +137,6 @@ module.exports = {
         await button.execute(interaction);
       }
     } else if (interaction.isModalSubmit()) {
-      const guildConfig = await Guild.findOne({
-        guildId: interaction.guild.id,
-      });
-      const welcomerConfig = await Welcomer.findOne({
-        guildId: interaction.guild.id,
-      });
-
       if (customId.startsWith("modal-ban-")) {
         const user = customId.split("-")[2];
         const cleanUserId = user.replace(/<@!?(\d+)>/, "$1");
@@ -197,8 +187,7 @@ module.exports = {
         let farewellData = await Welcomer.findOne({ guildId });
         if (!farewellData) {
           return interaction.reply({
-            content:
-              "Welcomer System has not found. Want to create a new Welcomer System Setup? Use `/welcomer create channel:`",
+            content: "Welcomer System has not found.",
             ephemeral: true,
           });
         }
@@ -226,15 +215,13 @@ module.exports = {
         let welcomeData = await Welcomer.findOne({ guildId });
         if (!welcomeData) {
           return interaction.reply({
-            content:
-              "Welcomer System has not found. Want to create a new Welcomer System Setup? Use `/welcomer create channel:`",
+            content: "Welcomer System has not found.",
             ephemeral: true,
           });
         }
 
         welcomeData.welcomeMessage.title = title || "Welcome!";
-        welcomeData.welcomeMessage.body =
-          message || "Hello {user}, welcome to the server!";
+        welcomeData.welcomeMessage.body = message || "Welcome to the server!";
         welcomeData.welcomeMessage.footer = footer || "Enjoy your stay!";
 
         await welcomeData.save();
@@ -453,17 +440,22 @@ module.exports = {
 
         const welcomeEmbed = new EmbedBuilder()
           .setColor(mConfig.embedColorPrimary)
-          .setAuthor({ name: interaction.user.username })
           .setTitle(`Welcome to your ticket!`)
           .setDescription(
             `Please describe your issue related to **${selectedTopic}**. A staff member will be with you shortly.`
           )
           .setFooter({ text: `Powered By ${client.user.tag}` });
 
+        const closeEmoji = {
+          name: "nie",
+          id: "998637736879730708",
+        };
+
         const closeButton = new ButtonBuilder()
           .setCustomId("close_ticket")
           .setLabel("Close Ticket")
-          .setStyle(ButtonStyle.Danger);
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji(closeEmoji);
 
         const row = new ActionRowBuilder().addComponents(closeButton);
 

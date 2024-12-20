@@ -46,8 +46,12 @@ module.exports = {
             name: "User",
             value: `<@${interaction.user.id}>`,
             inline: true,
-          })
-          .setFooter({ text: `${welcomerConfig.welcomeMessage.footer}` });
+          });
+
+        if (welcomerConfig.welcomeMessage.footer) {
+          embed.setFooter({ text: `${welcomerConfig.welcomeMessage.footer}` });
+        }
+
         welcomeChannel.send({ embeds: [embed] });
       }
     }

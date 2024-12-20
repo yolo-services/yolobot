@@ -13,6 +13,7 @@ const guildSchema = new mongoose.Schema({
     welcomer: { type: Boolean, default: false },
     level: { type: Boolean, default: false },
     economy: { type: Boolean, default: false },
+    suggestions: { type: Boolean, default: false },
   },
 });
 
