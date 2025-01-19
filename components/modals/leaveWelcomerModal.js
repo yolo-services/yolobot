@@ -25,17 +25,33 @@ module.exports = {
       .setLabel("Leave Message")
       .setStyle(TextInputStyle.Paragraph);
 
+    const welcomeImageInput = new TextInputBuilder()
+      .setCustomId("welcomerImage")
+      .setLabel("Leave Image")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false);
+
     const welcomeFooterInput = new TextInputBuilder()
       .setCustomId("welcomerFooter")
       .setLabel("Leave Footer")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 
-    const firstRow = new ActionRowBuilder().addComponents(welcomerMessageInput);
-    const secondRow = new ActionRowBuilder().addComponents(welcomeTitleInput);
-    const thirdRow = new ActionRowBuilder().addComponents(welcomeFooterInput);
+    const welcomeColorInput = new TextInputBuilder()
+      .setCustomId("welcomerColor")
+      .setLabel("Leave Embed Color")
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false);
 
-    modal.addComponents(firstRow, secondRow, thirdRow);
+    const firstRow = new ActionRowBuilder().addComponents(welcomeTitleInput);
+    const secondRow = new ActionRowBuilder().addComponents(
+      welcomerMessageInput
+    );
+    const thirdRow = new ActionRowBuilder().addComponents(welcomeImageInput);
+    const fourthRow = new ActionRowBuilder().addComponents(welcomeFooterInput);
+    const fifthRow = new ActionRowBuilder().addComponents(welcomeColorInput);
+
+    modal.addComponents(firstRow, secondRow, thirdRow, fourthRow, fifthRow);
 
     await interaction.showModal(modal);
   },

@@ -7,7 +7,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("money")
     .setDescription("Admin commands to manage user economy")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Tylko administratorzy mogą używać tej komendy
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((subcommand) =>
       subcommand
         .setName("add")

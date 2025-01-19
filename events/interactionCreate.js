@@ -180,7 +180,9 @@ module.exports = {
       } else if (customId === "modal-leave-welcomer") {
         const message = interaction.fields.getTextInputValue("welcomerMessage");
         const title = interaction.fields.getTextInputValue("welcomerTitle");
+        const image = interaction.fields.getTextInputValue("welcomerImage");
         const footer = interaction.fields.getTextInputValue("welcomerFooter");
+        const color = interaction.fields.getTextInputValue("welcomerColor");
 
         const guildId = interaction.guild.id;
 
@@ -194,8 +196,9 @@ module.exports = {
 
         farewellData.farewellMessage.title = title || "Goodbye!";
         farewellData.farewellMessage.body = message || "Sad to see you go.";
-        farewellData.farewellMessage.footer =
-          footer || "We hope to see you again.";
+        farewellData.welcomeMessage.image = image;
+        farewellData.welcomeMessage.footer = footer;
+        farewellData.welcomeMessage.color = color;
 
         await farewellData.save();
 
@@ -208,7 +211,9 @@ module.exports = {
       } else if (customId === "modal-join-welcomer") {
         const message = interaction.fields.getTextInputValue("welcomerMessage");
         const title = interaction.fields.getTextInputValue("welcomerTitle");
+        const image = interaction.fields.getTextInputValue("welcomerImage");
         const footer = interaction.fields.getTextInputValue("welcomerFooter");
+        const color = interaction.fields.getTextInputValue("welcomerColor");
 
         const guildId = interaction.guild.id;
 
@@ -222,7 +227,9 @@ module.exports = {
 
         welcomeData.welcomeMessage.title = title || "Welcome!";
         welcomeData.welcomeMessage.body = message || "Welcome to the server!";
-        welcomeData.welcomeMessage.footer = footer || "Enjoy your stay!";
+        welcomeData.welcomeMessage.image = image;
+        welcomeData.welcomeMessage.footer = footer;
+        welcomeData.welcomeMessage.color = color;
 
         await welcomeData.save();
 

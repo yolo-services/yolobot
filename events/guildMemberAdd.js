@@ -37,19 +37,30 @@ module.exports = {
       const welcomeChannel = interaction.guild.channels.cache.get(
         welcomerConfig.welcomerChannelId
       );
-      if (welcomeChannel) {
+
+      if (welcomeChannel && welcomerConfig.welcomeMessage.title) {
         const embed = new EmbedBuilder()
-          .setColor(mConfig.embedColorSuccess)
+          .setColor(
+            welcomerConfig.welcomeMessage.color || mConfig.embedColorSuccess
+          )
           .setTitle(welcomerConfig.welcomeMessage.title)
           .setDescription(welcomerConfig.welcomeMessage.body)
-          .addFields({
-            name: "User",
-            value: `<@${interaction.user.id}>`,
-            inline: true,
-          });
+          .setThumbnail(interaction.user.displayAvatarURL())
+
+        if (welcomerConfig.welcomeMessage.image) {
+          embed.setImage(welcomerConfig.welcomeMessage.image);
+        }
 
         if (welcomerConfig.welcomeMessage.footer) {
           embed.setFooter({ text: `${welcomerConfig.welcomeMessage.footer}` });
+        }
+
+        if (welcomerConfig.welcomeMessage.userFieldTitle) {
+          embed.addFields({
+            name: `${welcomerConfig.welcomeMessage.userFieldTitle}`,
+            value: `<@${interaction.user.id}>`,
+            inline: true,
+          });
         }
 
         welcomeChannel.send({ embeds: [embed] });

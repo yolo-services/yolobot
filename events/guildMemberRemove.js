@@ -80,14 +80,29 @@ module.exports = {
       const welcomeChannel = interaction.guild.channels.cache.get(
         welcomerConfig.welcomerChannelId
       );
-      if (welcomeChannel) {
+      if (welcomeChannel && welcomerConfig.farewellMessage.title) {
         const embed = new EmbedBuilder()
-          .setColor(mConfig.embedColorError)
+          .setColor(
+            welcomerConfig.welcomeMessage.color || mConfig.embedColorSuccess
+          )
           .setTitle(welcomerConfig.farewellMessage.title)
-          .setDescription(welcomerConfig.farewellMessage.body);
+          .setDescription(welcomerConfig.farewellMessage.body)
+          .setThumbnail(interaction.user.displayAvatarURL())
+
+        if (welcomerConfig.welcomeMessage.image) {
+          embed.setImage(welcomerConfig.welcomeMessage.image);
+        }
 
         if (welcomerConfig.welcomeMessage.footer) {
           embed.setFooter({ text: `${welcomerConfig.farewellMessage.footer}` });
+        }
+
+        if (welcomerConfig.welcomeMessage.userFieldTitle) {
+          embed.addFields({
+            name: `${welcomerConfig.welcomeMessage.userFieldTitle}`,
+            value: `<@${interaction.user.id}>`,
+            inline: true,
+          });
         }
 
         welcomeChannel.send({ embeds: [embed] });
