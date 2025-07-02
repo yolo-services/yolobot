@@ -1,11 +1,7 @@
 const {
   Events,
   EmbedBuilder,
-  ButtonStyle,
-  ButtonBuilder,
   ActionRowBuilder,
-  ChannelType,
-  PermissionsBitField,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
@@ -18,6 +14,12 @@ const Welcomer = require("../models/welcomer");
 const RolePanel = require("../models/rolePanel");
 const TicketPanel = require("../models/ticketPanel");
 const Giveaway = require("../models/giveaway");
+
+const { getImplementerInfoEmbed } = require("../data/messages/implementerinfo");
+const {
+  getPartnershipsRequirementsEmbed,
+} = require("../data/messages/partnershipsRequirements");
+const { createTicket } = require("../utils/createTicket");
 
 const allowedGuilds = config.allowedGuilds;
 const isDevMode = config.devMode === true;
@@ -40,6 +42,8 @@ module.exports = {
     } */
 
     const { customId } = interaction;
+
+    console.log("Interaction ID:", customId);
 
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
@@ -83,13 +87,13 @@ module.exports = {
             });
           }
         }
-      } else if (customId === "close_ticket") {
+      } else if (customId === "close-ticket") {
         const modal = new ModalBuilder()
-          .setCustomId("close_ticket_modal")
+          .setCustomId("close-ticket_modal")
           .setTitle("Close Ticket");
 
         const reasonInput = new TextInputBuilder()
-          .setCustomId("close_ticket_reason")
+          .setCustomId("close-ticket_reason")
           .setLabel("Reason for closing the ticket")
           .setStyle(TextInputStyle.Short)
           .setPlaceholder("Enter your reason")
@@ -295,9 +299,9 @@ module.exports = {
           content: `Panel \`${panelId}\` updated successfully!`,
           ephemeral: true,
         });
-      } else if (customId === "close_ticket_modal") {
+      } else if (customId === "close-ticket_modal") {
         const reason =
-          interaction.fields.getTextInputValue("close_ticket_reason") ||
+          interaction.fields.getTextInputValue("close-ticket_reason") ||
           "No reason privided";
         const ticketChannel = interaction.channel;
         const guild = await Guild.findOne({ guildId: interaction.guild.id });
@@ -374,109 +378,34 @@ module.exports = {
       }
     } else if (interaction.isStringSelectMenu()) {
       if (interaction.customId.startsWith("select-ticket-topic")) {
-        const selectedTopic = interaction.values[0];
-        const panelId = interaction.customId.split("_")[1];
+        await interaction.deferReply({ ephemeral: true });
+        await createTicket(interaction);
+      } else if (interaction.customId === "partnerships-info-topic-select") {
+        await interaction.deferReply({ ephemeral: true });
 
-        // Sprawdź, czy użytkownik już ma otwarty kanał ticket
-        const existingChannel = interaction.guild.channels.cache.find(
-          (channel) =>
-            channel.name === `${selectedTopic}-${interaction.user.username}`
-        );
+        if (
+          interaction.values[0] === "apply-implementer" ||
+          interaction.values[0] === "payout-partnerships"
+        ) {
+          await createTicket(interaction);
+        } else if (interaction.values[0] === "implementer-info") {
+          const embed = await getImplementerInfoEmbed(
+            interaction.user,
+            interaction
+          );
 
-        if (existingChannel) {
-          return interaction.reply({
-            content: `You already have an open ticket: ${existingChannel}`,
-            ephemeral: true,
-          });
+          if (!embed) {
+            return interaction.editReply({
+              content: "`⚠️` This user is not in the implementer database.",
+              ephemeral: true,
+            });
+          }
+
+          await interaction.editReply({ embeds: [embed] });
+        } else if (interaction.values[0] === "partnerships-requirements") {
+          const embed = getPartnershipsRequirementsEmbed(interaction);
+          return interaction.editReply({ embeds: [embed] });
         }
-
-        const panel = await TicketPanel.findOne({
-          panelId,
-          guildId: interaction.guild.id,
-        });
-
-        if (!panel.adminRoleId) {
-          return interaction.reply({
-            content: "Admin role ID is missing in the database.",
-            ephemeral: true,
-          });
-        }
-
-        const adminRole = interaction.guild.roles.cache.get(panel.adminRoleId);
-
-        if (!adminRole) {
-          return interaction.reply({
-            content: "The specified admin role does not exist.",
-            ephemeral: true,
-          });
-        }
-
-        // Create the ticket channel
-        const ticketChannel = await interaction.guild.channels.create({
-          name: `${selectedTopic}-${interaction.user.username}`,
-          type: ChannelType.GuildText,
-          parent: null, // Jeśli chcesz umieścić w konkretnej kategorii, zamień null na ID kategorii
-          permissionOverwrites: [
-            {
-              id: interaction.guild.id,
-              deny: [PermissionsBitField.Flags.ViewChannel],
-            },
-            {
-              id: interaction.user.id,
-              allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages,
-              ],
-            },
-            {
-              id: interaction.guild.roles.everyone.id,
-              deny: [PermissionsBitField.Flags.ViewChannel],
-            },
-            {
-              id: adminRole.id,
-              allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages,
-                PermissionsBitField.Flags.ManageMessages,
-                PermissionsBitField.Flags.ReadMessageHistory,
-                PermissionsBitField.Flags.ManageChannels,
-              ],
-            },
-          ],
-        });
-
-        const welcomeEmbed = new EmbedBuilder()
-          .setColor(mConfig.embedColorPrimary)
-          .setTitle(`Welcome to your ticket!`)
-          .setDescription(
-            `Please describe your issue related to **${selectedTopic}**. A staff member will be with you shortly.`
-          )
-          .setFooter({ text: `Powered By ${client.user.tag}` });
-
-        const closeEmoji = {
-          name: "nie",
-          id: "998637736879730708",
-        };
-
-        const closeButton = new ButtonBuilder()
-          .setCustomId("close_ticket")
-          .setLabel("Close Ticket")
-          .setStyle(ButtonStyle.Danger)
-          .setEmoji(closeEmoji);
-
-        const row = new ActionRowBuilder().addComponents(closeButton);
-
-        const welcomeMessage = await ticketChannel.send({
-          embeds: [welcomeEmbed],
-          components: [row],
-        });
-
-        await welcomeMessage.pin();
-
-        await interaction.reply({
-          content: `Your ticket has been created: ${ticketChannel}`,
-          ephemeral: true,
-        });
       }
     }
   },
