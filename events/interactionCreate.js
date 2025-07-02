@@ -34,12 +34,21 @@ module.exports = {
       });
     }
 
-    /* if (isDevMode && !allowedChannels.includes(interaction.channel.id)) {
+    const guildConfig = await Guild.findOne({ guildId: interaction.guild.id });
+
+    if (!guildConfig) {
       return interaction.reply({
-        content: "This interaction can only be used in specific channels.",
+        content: "This server is not configured.",
         ephemeral: true,
       });
-    } */
+    }
+
+    if (!guildConfig.licenseCode && !interaction.isCommand()) {
+      return interaction.reply({
+        content: "This server does not have a license for this using this bot.",
+        ephemeral: true,
+      });
+    }
 
     const { customId } = interaction;
 
@@ -51,6 +60,27 @@ module.exports = {
       if (!command) {
         return interaction.reply({
           content: `\`${interaction.commandName}\` is not a command!`,
+          ephemeral: true,
+        });
+      }
+
+      if (!guildConfig.licenseCode && command.data.name !== "license") {
+        return interaction.reply({
+          content:
+            "This server does not have a license for this using this bot.",
+          ephemeral: true,
+        });
+      }
+
+      const commandLicense = command.license || "standard";
+
+      if (
+        commandLicense !== guildConfig.licenseType &&
+        command.data.name !== "license" &&
+        guildConfig.licenseType !== "premium"
+      ) {
+        return interaction.reply({
+          content: "This command is not available for this server.",
           ephemeral: true,
         });
       }
@@ -187,7 +217,8 @@ module.exports = {
         const image = interaction.fields.getTextInputValue("welcomerImage");
         const footer = interaction.fields.getTextInputValue("welcomerFooter");
         const color = interaction.fields.getTextInputValue("welcomerColor");
-        const userFieldTitle = interaction.fields.getTextInputValue("userFieldTitle");
+        const userFieldTitle =
+          interaction.fields.getTextInputValue("userFieldTitle");
 
         const guildId = interaction.guild.id;
 
@@ -220,7 +251,8 @@ module.exports = {
         const image = interaction.fields.getTextInputValue("welcomerImage");
         const footer = interaction.fields.getTextInputValue("welcomerFooter");
         const color = interaction.fields.getTextInputValue("welcomerColor");
-        const userFieldTitle = interaction.fields.getTextInputValue("userFieldTitle");
+        const userFieldTitle =
+          interaction.fields.getTextInputValue("userFieldTitle");
 
         const guildId = interaction.guild.id;
 
