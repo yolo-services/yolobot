@@ -2,40 +2,48 @@ const { Events, AuditLogEvent, EmbedBuilder } = require("discord.js");
 const Guild = require("../models/guild");
 const Welcomer = require("../models/welcomer");
 const mConfig = require("../messageConfig.json");
+const {
+  findAndDeleteRepresentivePartnerships,
+} = require("../utils/findAndDeleteRepresentivePartnerships");
 
 module.exports = {
   name: Events.GuildMemberRemove,
-  async execute(client, interaction) {
-    const guildConfig = await Guild.findOne({ guildId: interaction.guild.id });
+  async execute(client, member) {
+    const guildConfig = await Guild.findOne({ guildId: member.guild.id });
     const welcomerConfig = await Welcomer.findOne({
-      guildId: interaction.guild.id,
+      guildId: member.guild.id,
     });
 
+    await findAndDeleteRepresentivePartnerships(
+      client,
+      member.id,
+      member.guild.id
+    );
+
+    const roles =
+      member.roles.cache
+        .filter((role) => role.id !== member.guild.id)
+        .map((role) => `<@&${role.id}>`)
+        .join(", ") || "No roles";
+
     if (guildConfig && guildConfig.logChannelId) {
-      const logChannel = interaction.guild.channels.cache.get(
+      const logChannel = member.guild.channels.cache.get(
         guildConfig.logChannelId
       );
       if (logChannel) {
-        const fetchedLogs = await interaction.guild.fetchAuditLogs({
+        const fetchedLogs = await member.guild.fetchAuditLogs({
           limit: 1,
           type: AuditLogEvent.MemberKick,
         });
 
         const kickLog = fetchedLogs.entries.first();
-
         const kickTime = kickLog ? kickLog.createdAt : null;
         const currentTime = new Date();
         const timeDifference = (currentTime - kickTime) / 1000;
 
-        console.log(kickLog);
-
-        if (
-          kickLog &&
-          kickLog.target.id === interaction.user.id &&
-          timeDifference < 10
-        ) {
+        if (kickLog && kickLog.target.id === member.id && timeDifference < 10) {
           const { executor, target, reason } = kickLog;
-          const leaveEmbed = new EmbedBuilder()
+          const kickEmbed = new EmbedBuilder()
             .setColor(mConfig.embedColorError)
             .setAuthor({
               name: target.tag,
@@ -44,40 +52,44 @@ module.exports = {
             .setThumbnail(target.displayAvatarURL())
             .setTitle("Member kicked")
             .addFields(
-              {
-                name: "Reason",
-                value: reason,
-              },
-              {
-                name: "Moderator",
-                value: `<@${executor.id}>`,
-              },
-              {
-                name: "User",
-                value: `<@${target.id}> (${target.id})`,
-              }
-            );
-          logChannel.send({ embeds: [leaveEmbed] });
+              { name: "Reason", value: reason || "No reason provided" },
+              { name: "Moderator", value: `<@${executor.id}>` },
+              { name: "User", value: `<@${target.id}> (${target.id})` },
+              { name: "Roles", value: roles }
+            )
+            .setFooter({ text: mConfig.footerText })
+            .setTimestamp();
+
+          logChannel.send({ embeds: [kickEmbed] });
         } else {
           const leaveEmbed = new EmbedBuilder()
             .setColor(mConfig.embedColorError)
             .setAuthor({
-              name: interaction.user.tag,
-              iconURL: interaction.user.displayAvatarURL(),
+              name: member.user.tag,
+              iconURL: member.user.displayAvatarURL(),
             })
-            .setThumbnail(interaction.user.displayAvatarURL())
+            .setThumbnail(member.user.displayAvatarURL())
             .setTitle("Member left")
-            .addFields({
-              name: "User",
-              value: `<@${interaction.user.id}> (${interaction.user.id})`,
-            });
+            .addFields(
+              {
+                name: "User",
+                value: `<@${member.user.id}> (${member.user.id})`,
+              },
+              {
+                name: "Roles",
+                value: roles,
+              }
+            )
+            .setFooter({ text: mConfig.footerText })
+            .setTimestamp();
+
           logChannel.send({ embeds: [leaveEmbed] });
         }
       }
     }
 
     if (welcomerConfig && welcomerConfig.welcomerChannelId) {
-      const welcomeChannel = interaction.guild.channels.cache.get(
+      const welcomeChannel = member.guild.channels.cache.get(
         welcomerConfig.welcomerChannelId
       );
       if (welcomeChannel && welcomerConfig.farewellMessage.title) {
@@ -87,20 +99,22 @@ module.exports = {
           )
           .setTitle(welcomerConfig.farewellMessage.title)
           .setDescription(welcomerConfig.farewellMessage.body)
-          .setThumbnail(interaction.user.displayAvatarURL())
+          .setThumbnail(member.user.displayAvatarURL());
 
         if (welcomerConfig.welcomeMessage.image) {
           embed.setImage(welcomerConfig.welcomeMessage.image);
         }
 
         if (welcomerConfig.welcomeMessage.footer) {
-          embed.setFooter({ text: `${welcomerConfig.farewellMessage.footer}` });
+          embed.setFooter({
+            text: welcomerConfig.farewellMessage.footer,
+          });
         }
 
         if (welcomerConfig.welcomeMessage.userFieldTitle) {
           embed.addFields({
-            name: `${welcomerConfig.welcomeMessage.userFieldTitle}`,
-            value: `<@${interaction.user.id}>`,
+            name: welcomerConfig.welcomeMessage.userFieldTitle,
+            value: `<@${member.user.id}>`,
             inline: true,
           });
         }

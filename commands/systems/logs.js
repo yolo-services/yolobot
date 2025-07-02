@@ -23,6 +23,11 @@ module.exports = {
         .addChannelOption((option) =>
           option.setName("archives").setDescription("Tickets archives channel")
         )
+        .addChannelOption((option) =>
+          option
+            .setName("partnerships")
+            .setDescription("Partnerhsips notifications channel")
+        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -43,6 +48,7 @@ module.exports = {
 
     const channel = interaction.options.getChannel("channel");
     const archives = interaction.options.getChannel("archives");
+    const partnerships = interaction.options.getChannel("partnerships");
 
     let guildConfig =
       (await Guild.findOne({ guildId })) || new Guild({ guildId });
@@ -59,11 +65,18 @@ module.exports = {
     if (subcommand === "set") {
       if (channel) guildConfig.logChannelId = channel.id;
       if (archives) guildConfig.archiveChannelId = archives.id;
+      if (partnerships) guildConfig.partnershipsLogChannelId = partnerships.id;
       await guildConfig.save();
 
       await interaction.reply({
-        content: `Logs channel has been set to <#${channel.id}>${
-          archives && `, Archives channel has been set to <#${archives.id}>`
+        content: `Main logs channel has been set to <#${channel.id}>${
+          archives
+            ? `, ticket archives channel has been set to <#${archives.id}>`
+            : ""
+        }${
+          partnerships
+            ? `, partnerships notifications channel has been set to <#${partnerships.id}>`
+            : ""
         }`,
         ephemeral: true,
       });

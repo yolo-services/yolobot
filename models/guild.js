@@ -4,6 +4,8 @@ const guildSchema = new mongoose.Schema({
   guildId: { type: String, required: true },
   logChannelId: { type: String, required: false },
   archiveChannelId: { type: String, required: false },
+  ticketAdminRoleId: { type: String, required: false },
+  partnershipsLogChannelId: { type: String, required: false },
   enabledSystems: {
     autoMod: { type: Boolean, default: false },
     giveaway: { type: Boolean, default: false },
@@ -14,6 +16,7 @@ const guildSchema = new mongoose.Schema({
     level: { type: Boolean, default: false },
     economy: { type: Boolean, default: false },
     suggestions: { type: Boolean, default: false },
+    partnerships: { type: Boolean, default: false },
   },
 });
 
