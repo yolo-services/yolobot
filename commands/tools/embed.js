@@ -21,14 +21,14 @@ module.exports = {
     // Tytuł
     const titleInput = new TextInputBuilder()
       .setCustomId("embedTitle")
-      .setLabel("Embed Title (Optional)")
+      .setLabel("Embed Title")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 
     // Opis
     const descriptionInput = new TextInputBuilder()
       .setCustomId("embedDescription")
-      .setLabel("Embed Description (Optional)")
+      .setLabel("Embed Description")
       .setStyle(TextInputStyle.Paragraph)
       .setRequired(false);
 
@@ -42,14 +42,14 @@ module.exports = {
     // Thumbnail URL
     const thumbnailInput = new TextInputBuilder()
       .setCustomId("embedThumbnail")
-      .setLabel("Thumbnail URL (Optional)")
+      .setLabel("Thumbnail URL")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 
     // Footer text
     const footerInput = new TextInputBuilder()
       .setCustomId("embedFooter")
-      .setLabel("Footer Text (Optional)")
+      .setLabel("Footer Text")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 

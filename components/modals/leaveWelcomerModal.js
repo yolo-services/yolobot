@@ -27,19 +27,19 @@ module.exports = {
 
     const welcomeImageInput = new TextInputBuilder()
       .setCustomId("welcomerImage")
-      .setLabel("Leave Image")
+      .setLabel("Leave Image URL")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 
     const welcomeFooterInput = new TextInputBuilder()
       .setCustomId("welcomerFooter")
-      .setLabel("Leave Footer")
+      .setLabel("Footer Text")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 
     const welcomeColorInput = new TextInputBuilder()
       .setCustomId("welcomerColor")
-      .setLabel("Leave Embed Color")
+      .setLabel("Embed Color (Hex code, e.g., #FF5733)")
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 

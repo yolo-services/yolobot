@@ -377,7 +377,11 @@ module.exports = {
           embed.setFooter({ text: footer });
         }
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.channel.send({ embeds: [embed] });
+        await interaction.reply({
+          content: "Embed sent successfully!",
+          ephemeral: true,
+        });
       } else {
         await interaction.reply({
           content: "This modal is not recognized",
