@@ -25,14 +25,14 @@ module.exports = {
   async execute(client, interaction) {
     const guildConfig = await Guild.findOne({ guildId: interaction.guild.id });
 
-    if (!guildConfig) {
+    if (!guildConfig && !interaction.isCommand()) {
       return interaction.reply({
         content: "This server is not configured.",
         ephemeral: true,
       });
     }
 
-    if (!guildConfig.licenseCode && !interaction.isCommand()) {
+    if (!guildConfig?.licenseCode && !interaction.isCommand()) {
       return interaction.reply({
         content: "This server does not have a license for this using this bot.",
         ephemeral: true,
@@ -42,6 +42,8 @@ module.exports = {
     const { customId } = interaction;
 
     console.log("Interaction ID:", customId);
+
+    const bypassLicenseCommands = ["fix-guild-database", "license", "ping"];
 
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
@@ -53,10 +55,19 @@ module.exports = {
         });
       }
 
-      if (!guildConfig.licenseCode && command.data.name !== "license") {
+      if (!guildConfig && command.data.name !== "fix-guild-database") {
         return interaction.reply({
-          content:
-            "This server does not have a license for this using this bot.",
+          content: "This server is not configured.",
+          ephemeral: true,
+        });
+      }
+
+      if (
+        !guildConfig?.licenseCode &&
+        !bypassLicenseCommands.includes(command.data.name)
+      ) {
+        return interaction.reply({
+          content: "This server does not have a license for using this bot.",
           ephemeral: true,
         });
       }
@@ -64,8 +75,8 @@ module.exports = {
       const commandLicense = command.license || "standard";
 
       if (
-        commandLicense !== guildConfig.licenseType &&
-        command.data.name !== "license" &&
+        commandLicense !== guildConfig?.licenseType &&
+        !bypassLicenseCommands.includes(command.data.name) &&
         guildConfig.licenseType !== "premium"
       ) {
         return interaction.reply({

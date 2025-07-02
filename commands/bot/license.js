@@ -36,10 +36,17 @@ module.exports = {
     if (subcommand === "realize") {
       const guildId = interaction.guild.id;
       const guild = await Guild.findOne({ guildId });
+      const guildCode = await License.findOne({ code: guild.licenseCode });
 
-      if (guild.licenseCode) {
+      if (guild.licenseCode && guildCode) {
         return interaction.reply({
           content: "This server already has a license.",
+          ephemeral: true,
+        });
+      } else if (guild.licenseCode && !guildCode) {
+        return interaction.reply({
+          content:
+            "This server already has a license but the license code does not exist. Probably got deleted by bot managment. Please contact the bot support team.",
           ephemeral: true,
         });
       }
@@ -77,11 +84,20 @@ module.exports = {
       });
     } else if (subcommand === "info") {
       const guildId = interaction.guild.id;
-
       const guild = await Guild.findOne({ guildId });
+      const guildCode = await License.findOne({ code: guild.licenseCode });
+
       if (!guild.licenseCode) {
         return interaction.reply({
           content: "This server does not have a license.",
+          ephemeral: true,
+        });
+      }
+
+      if (guild.licenseCode && !guildCode) {
+        return interaction.reply({
+          content:
+            "Your license code does not exist. Probably got deleted by bot managment. Please contact the bot support team.",
           ephemeral: true,
         });
       }
