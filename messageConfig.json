@@ -1,5 +1,6 @@
 {
-  "embedColorPrimary": "#FFF000",
+  "embedColorPrimary": "#9421ff",
+
   "embedColorSuccess": "#00FF00",
   "embedColorWarning": "#FFCC4D",
   "embedColorError": "#FF0000",
@@ -15,5 +16,7 @@
 
   "hasHigherRolePosition": "This person has a higher role than you or has the same role as you have.",
   "unableToInteractWithYourself": "You cannot do that to yourself.",
-  "cannotUseButton": "You cannot use this button."
+  "cannotUseButton": "You cannot use this button.",
+
+  "footerText": "Powered by YoloBot"
 }
