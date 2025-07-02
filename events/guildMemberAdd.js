@@ -48,7 +48,8 @@ module.exports = {
           )
           .setTitle(welcomerConfig.welcomeMessage.title)
           .setDescription(welcomerConfig.welcomeMessage.body)
-          .setThumbnail(interaction.user.displayAvatarURL());
+          .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true }))
+          .setTimestamp();
 
         if (welcomerConfig.welcomeMessage.image) {
           embed.setImage(welcomerConfig.welcomeMessage.image);
@@ -56,6 +57,8 @@ module.exports = {
 
         if (welcomerConfig.welcomeMessage.footer) {
           embed.setFooter({ text: `${welcomerConfig.welcomeMessage.footer}` });
+        } else {
+          embed.setFooter({ text: mConfig.footerText });
         }
 
         if (welcomerConfig.welcomeMessage.userFieldTitle) {

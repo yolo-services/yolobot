@@ -187,6 +187,7 @@ module.exports = {
         const image = interaction.fields.getTextInputValue("welcomerImage");
         const footer = interaction.fields.getTextInputValue("welcomerFooter");
         const color = interaction.fields.getTextInputValue("welcomerColor");
+        const userFieldTitle = interaction.fields.getTextInputValue("userFieldTitle");
 
         const guildId = interaction.guild.id;
 
@@ -200,9 +201,10 @@ module.exports = {
 
         farewellData.farewellMessage.title = title || "Goodbye!";
         farewellData.farewellMessage.body = message || "Sad to see you go.";
-        farewellData.welcomeMessage.image = image;
-        farewellData.welcomeMessage.footer = footer;
-        farewellData.welcomeMessage.color = color;
+        farewellData.farewellMessage.image = image;
+        farewellData.farewellMessage.footer = footer;
+        farewellData.farewellMessage.color = color;
+        farewellData.farewellMessage.userFieldTitle = userFieldTitle || "User";
 
         await farewellData.save();
 
@@ -218,6 +220,7 @@ module.exports = {
         const image = interaction.fields.getTextInputValue("welcomerImage");
         const footer = interaction.fields.getTextInputValue("welcomerFooter");
         const color = interaction.fields.getTextInputValue("welcomerColor");
+        const userFieldTitle = interaction.fields.getTextInputValue("userFieldTitle");
 
         const guildId = interaction.guild.id;
 
@@ -234,6 +237,7 @@ module.exports = {
         welcomeData.welcomeMessage.image = image;
         welcomeData.welcomeMessage.footer = footer;
         welcomeData.welcomeMessage.color = color;
+        farewellData.welcomeMessage.userFieldTitle = userFieldTitle || "User";
 
         await welcomeData.save();
 

@@ -95,26 +95,29 @@ module.exports = {
       if (welcomeChannel && welcomerConfig.farewellMessage.title) {
         const embed = new EmbedBuilder()
           .setColor(
-            welcomerConfig.welcomeMessage.color || mConfig.embedColorSuccess
+            welcomerConfig.farewellMessage.color || mConfig.embedColorSuccess
           )
           .setTitle(welcomerConfig.farewellMessage.title)
           .setDescription(welcomerConfig.farewellMessage.body)
-          .setThumbnail(member.user.displayAvatarURL());
+          .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+          .setTimestamp();
 
-        if (welcomerConfig.welcomeMessage.image) {
-          embed.setImage(welcomerConfig.welcomeMessage.image);
+        if (welcomerConfig.farewellMessage.image) {
+          embed.setImage(welcomerConfig.farewellMessage.image);
         }
 
-        if (welcomerConfig.welcomeMessage.footer) {
+        if (welcomerConfig.farewellMessage.footer) {
           embed.setFooter({
             text: welcomerConfig.farewellMessage.footer,
           });
+        } else {
+          embed.setFooter({ text: mConfig.footerText });
         }
 
-        if (welcomerConfig.welcomeMessage.userFieldTitle) {
+        if (welcomerConfig.farewellMessage.userFieldTitle) {
           embed.addFields({
-            name: welcomerConfig.welcomeMessage.userFieldTitle,
-            value: `<@${member.user.id}>`,
+            name: welcomerConfig.farewellMessage.userFieldTitle,
+            value: `<@${member.user.id}> (${member.user.id})`,
             inline: true,
           });
         }

@@ -16,9 +16,15 @@ const findAndDeleteRepresentivePartnerships = async (
 
   const guildConfig = await Guild.findOne({ guildId: guildId });
 
-  const logChannel = await client.channels.fetch(
-    guildConfig.partnershipsLogChannelId
-  );
+  if (!guildConfig) return;
+
+  let logChannel;
+
+  if (guildConfig.partnershipsLogChannelId) {
+    logChannel = await client.channels.fetch(
+      guildConfig.partnershipsLogChannelId
+    );
+  }
 
   const partnetshipConfig = await PartnershipSystem.findOne({
     guildId: guildId,
