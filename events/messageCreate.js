@@ -24,6 +24,7 @@ module.exports = {
     const SuggestionsData = await Suggestions.findOne({
       guildId: message.guild.id,
     });
+
     const partnershipsConfig = await partnershipSystem.findOne({
       guildId: message.guild.id,
     });
@@ -31,6 +32,7 @@ module.exports = {
     const member = message.guild.members.cache.get(message.author.id);
 
     if (
+      partnershipsConfig &&
       message.channel.id === partnershipsConfig.channelId &&
       member.roles.cache.has(partnershipsConfig.roleId)
     ) {
@@ -125,7 +127,8 @@ module.exports = {
 
         if (newAmount % PRICE_INCREASE_PER === 0) {
           const times = Math.floor(newAmount / PRICE_INCREASE_PER);
-          const newPrice = PRICE_INCREASE * times + partnershipsConfig.defaultPrice;
+          const newPrice =
+            PRICE_INCREASE * times + partnershipsConfig.defaultPrice;
           user.price = newPrice.toFixed(2);
 
           const newPriceEmbed = new EmbedBuilder()
