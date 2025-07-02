@@ -6,7 +6,6 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require("discord.js");
-const config = require("../config.json");
 const mConfig = require("../messageConfig.json");
 
 const Guild = require("../models/guild");
@@ -21,19 +20,9 @@ const {
 } = require("../data/messages/partnershipsRequirements");
 const { createTicket } = require("../utils/createTicket");
 
-const allowedGuilds = config.allowedGuilds;
-const isDevMode = config.devMode === true;
-
 module.exports = {
   name: Events.InteractionCreate,
   async execute(client, interaction) {
-    if (isDevMode && !allowedGuilds.includes(interaction.guild.id)) {
-      return interaction.reply({
-        content: "This interaction can only be used on allowed servers.",
-        ephemeral: true,
-      });
-    }
-
     const guildConfig = await Guild.findOne({ guildId: interaction.guild.id });
 
     if (!guildConfig) {
