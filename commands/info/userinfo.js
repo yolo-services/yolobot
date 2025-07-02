@@ -17,9 +17,9 @@ module.exports = {
     const member = interaction.guild.members.cache.get(user.id);
 
     const embed = new EmbedBuilder()
-      .setColor(mConfig.embedColorPrimary) // Kolor embeda
-      .setTitle(`${user.username}'s Information`) // Nazwa użytkownika w tytule
-      .setThumbnail(user.displayAvatarURL()) // Avatar użytkownika
+      .setColor(mConfig.embedColorPrimary)
+      .setTitle(`${user.username}'s Information`)
+      .setThumbnail(user.displayAvatarURL({ dynamic: true }))
       .addFields(
         { name: "Ping", value: `<@${user.id}>` },
         { name: "Nick", value: `${user.tag}` },

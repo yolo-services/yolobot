@@ -44,8 +44,11 @@ module.exports = {
         {
           name: "Next Level Exp",
           value: `${userData.nextLevelExp}`,
+          inline: true,
         }
-      );
+      )
+      .setFooter({ text: mConfig.footerText })
+      .setTimestamp();
 
     await interaction.reply({ embeds: [levelEmbed] });
   },
