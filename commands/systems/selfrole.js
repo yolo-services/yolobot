@@ -131,7 +131,8 @@ module.exports = {
 
     const role = interaction.options.getRole("role");
     const label = interaction.options.getString("label");
-    const style = interaction.options.getString("style").toUpperCase();
+    const style = interaction.options.getString("style");
+    const formattedStyle = style?.charAt(0)?.toUpperCase() + style?.slice(1);
 
     const title = interaction.options.getString("title") || "Selfrole Panel";
     const description =
@@ -144,22 +145,30 @@ module.exports = {
       (await Guild.findOne({ guildId })) || new Guild({ guildId });
 
     if (subcommand !== "toggle" && !guildData.enabledSystems.selfrole) {
-      return interaction.reply(
-        "This system is disabled! Use `/selfrole toggle enabled:`"
-      );
+      return interaction.reply({
+        content: "This system is disabled! Use `/selfrole toggle enabled:`",
+        ephemeral: true,
+      });
     }
 
     const panel = await RolePanel.findOne({
       panelId,
       guildId: interaction.guild.id,
     });
-    if (subcommand !== "create" && !panel) {
-      return interaction.reply("Panel not found");
+
+    if (subcommand !== "create" && !panel && subcommand !== "toggle") {
+      return interaction.reply({
+        content: "Panel not found",
+        ephemeral: true,
+      });
     }
 
     if (subcommand === "create") {
       if (panel) {
-        return interaction.reply(`Panel with id \`${panelId}\` already exist`);
+        return interaction.reply({
+          content: `Panel with id \`${panelId}\` already exist`,
+          ephemeral: true,
+        });
       }
 
       const newPanel = new RolePanel({
@@ -203,7 +212,7 @@ module.exports = {
 
       if (roleExists) {
         return interaction.reply({
-          content: `Role ${role} has been already added to panel \`${panelId}\``,
+          content: `Role <@&${role.id}> has been already added to panel \`${panelId}\``,
           ephemeral: true,
         });
       }
@@ -211,25 +220,28 @@ module.exports = {
       panel.roles.push({
         label,
         roleId: role.id,
-        buttonStyle: ButtonStyle[style] || ButtonStyle.Primary,
+        buttonStyle: ButtonStyle[formattedStyle] || ButtonStyle.Primary,
       });
 
       await panel.save();
       return interaction.reply({
-        content: `Role <@${role.id}> added to panel \`${panelId}\` with label **${label}**`,
+        content: `Role <@&${role.id}> added to panel \`${panelId}\` with label **${label}**`,
         ephemeral: true,
       });
     } else if (subcommand === "removerole") {
       const roleIndex = panel.roles.findIndex((r) => r.roleId === role.id);
       if (roleIndex === -1) {
-        return interaction.reply("Role not found in this panel");
+        return interaction.reply({
+          content: "Role not found in this panel",
+          ephemeral: true,
+        });
       }
 
       panel.roles.splice(roleIndex, 1);
       await panel.save();
 
       await interaction.reply({
-        content: `Role ${role} removed from panel \`${panelId}\``,
+        content: `Role <@&${role.id}> removed from panel \`${panelId}\``,
         ephemeral: true,
       });
     } else if (subcommand === "send") {
@@ -244,9 +256,11 @@ module.exports = {
       });
 
       const embed = new EmbedBuilder()
+        .setColor(mConfig.embedColorPrimary)
         .setTitle(panel.title)
         .setDescription(panel.description)
-        .setColor(mConfig.embedColorPrimary);
+        .setFooter({ text: mConfig.footerText })
+        .setTimestamp();
 
       await interaction.reply({
         embeds: [embed],
@@ -256,9 +270,12 @@ module.exports = {
       guildData.enabledSystems.selfrole = enabled;
       await guildData.save();
 
-      return interaction.reply(
-        `The Selfrole system has been ${enabled ? "enabled" : "disabled"}`
-      );
+      return interaction.reply({
+        content: `The Selfrole system has been ${
+          enabled ? "enabled" : "disabled"
+        }`,
+        ephemeral: true,
+      });
     }
   },
 };

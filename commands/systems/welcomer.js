@@ -43,7 +43,6 @@ module.exports = {
     const subcommand = interaction.options.getSubcommand();
 
     const channel = interaction.options.getChannel("channel");
-
     const enabled = interaction.options.getBoolean("enabled");
 
     let guildData = await Guild.findOne({ guildId: interaction.guild.id });
@@ -77,7 +76,9 @@ module.exports = {
       const setupEmbed = new EmbedBuilder()
         .setTitle("Welcomer System")
         .setDescription("Choose an action to setup a new messages")
-        .setColor(mConfig.embedColorPrimary);
+        .setColor(mConfig.embedColorPrimary)
+        .setFooter({ text: mConfig.footerText })
+        .setTimestamp();
 
       const join = joinWelcomerButton.createButton();
       const leave = leaveWelcomerButton.createButton();

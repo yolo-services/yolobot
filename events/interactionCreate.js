@@ -76,13 +76,13 @@ module.exports = {
           if (member.roles.cache.has(roleId)) {
             await member.roles.remove(roleId);
             return interaction.reply({
-              content: `Role <@${role.id}> removed!`,
+              content: `Role <@&${role.id}> removed!`,
               ephemeral: true,
             });
           } else {
             await member.roles.add(roleId);
             return interaction.reply({
-              content: `Role <@${role.id}> added!`,
+              content: `Role <@&${role.id}> added!`,
               ephemeral: true,
             });
           }
@@ -351,7 +351,7 @@ module.exports = {
         const footer =
           interaction.fields.getTextInputValue("embedFooter") || null;
 
-        const embed = new EmbedBuilder().setColor(color).setTimestamp();
+        const embed = new EmbedBuilder();
 
         if (title) {
           embed.setTitle(title);
@@ -359,6 +359,10 @@ module.exports = {
 
         if (description) {
           embed.setDescription(description);
+        }
+
+        if (color) {
+          embed.setColor(color);
         }
 
         if (thumbnail) {

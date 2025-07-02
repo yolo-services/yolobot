@@ -4,14 +4,13 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("clear")
     .setDescription("Deletes a specified number of messages")
-    .addIntegerOption(
-      (option) =>
-        option
-          .setName("amount")
-          .setDescription("Number of messages to delete")
-          .setRequired(true)
-          .setMinValue(1)
-          .setMaxValue(100) // You can adjust the maximum value
+    .addIntegerOption((option) =>
+      option
+        .setName("amount")
+        .setDescription("Number of messages to delete")
+        .setRequired(true)
+        .setMinValue(1)
+        .setMaxValue(100)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
   async execute(client, interaction) {
@@ -41,6 +40,7 @@ module.exports = {
         ephemeral: true,
       });
     } catch (e) {
+      console.error(e);
       return interaction.reply({
         content: e.message,
         ephemeral: true,

@@ -257,11 +257,12 @@ module.exports = {
     ) {
       const suggestionEmbed = new EmbedBuilder()
         .setColor(mConfig.embedColorPrimary)
-        .setAuthor({
-          name: message.author.username,
-          iconURL: message.author.displayAvatarURL(),
-        })
-        .setDescription(message.content)
+        .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
+        .setDescription(
+          `\`\`\`${message.guild.name} - SUGGESTION\`\`\`
+          > **Suggestion content:**
+          \`\`\`${message.content}\`\`\``
+        )
         .setFooter({ text: mConfig.footerText })
         .setTimestamp();
       await message.delete();
