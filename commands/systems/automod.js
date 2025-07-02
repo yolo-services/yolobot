@@ -6,6 +6,7 @@ const AutoMod = require("../../models/automod");
 const Guild = require("../../models/guild");
 
 module.exports = {
+  license: "premium",
   data: new SlashCommandBuilder()
     .setName("automod")
     .setDescription("Setup automod on your server")

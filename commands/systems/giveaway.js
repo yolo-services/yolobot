@@ -1,6 +1,5 @@
 const {
   ActionRowBuilder,
-  MessageButton,
   SlashCommandBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -14,6 +13,7 @@ const Guild = require("../../models/guild");
 const mConfig = require("../../messageConfig.json");
 
 module.exports = {
+  license: "premium",
   data: new SlashCommandBuilder()
     .setName("giveaway")
     .setDescription("Manage giveaways")

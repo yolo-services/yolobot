@@ -11,6 +11,7 @@ const Guild = require("../../models/guild");
 const partnershipSystem = require("../../models/partnershipSystem");
 
 module.exports = {
+  license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("remind-implementers")
     .setDescription("Reminds inactive implementers.")
@@ -40,7 +41,7 @@ module.exports = {
     }
 
     try {
-      remindInactiveImplementers(client);
+      remindInactiveImplementers(client, interaction.guild.id);
 
       const embed = new EmbedBuilder()
         .setColor(mConfig.embedColorSuccess)

@@ -5,7 +5,6 @@ const {
 } = require("discord.js");
 const Economy = require("../../models/economy");
 const Guild = require("../../models/guild");
-const mConfig = require("../../messageConfig.json");
 
 module.exports = {
   data: new SlashCommandBuilder()

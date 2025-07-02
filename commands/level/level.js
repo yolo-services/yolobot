@@ -1,13 +1,13 @@
 const {
   SlashCommandBuilder,
   EmbedBuilder,
-  PermissionFlagsBits,
 } = require("discord.js");
 const UserLevel = require("../../models/userLevel");
 const Guild = require("../../models/guild");
 const mConfig = require("../../messageConfig.json");
 
 module.exports = {
+  license: "premium",
   data: new SlashCommandBuilder()
     .setName("level")
     .setDescription("Manage and check user levels")

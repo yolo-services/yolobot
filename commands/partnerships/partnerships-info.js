@@ -4,6 +4,7 @@ const {
 } = require("../../data/messages/partnershipsInfo");
 
 module.exports = {
+  license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("partnerships-info")
     .setDescription("Displays all partnerships information"),

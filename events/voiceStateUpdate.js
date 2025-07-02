@@ -15,6 +15,13 @@ module.exports = {
     const guildData = await Guild.findOne({ guildId: newState.guild.id });
     const levelingData = await Leveling.findOne({ guildId: newState.guild.id });
 
+    if (
+      !guildData ||
+      !guildData.licenseCode ||
+      guildData.licenseType === "parrtnerships"
+    )
+      return;
+
     if (newState.channelId && !oldState.channelId) {
       if (guildData && guildData.logChannelId) {
         const logChannel = newState.guild.channels.cache.get(

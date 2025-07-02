@@ -20,6 +20,14 @@ module.exports = {
       member.guild.id
     );
 
+    if (
+      !guildConfig ||
+      !guildConfig.enabledSystems.autoMod ||
+      !guildConfig.licenseCode ||
+      guildConfig.licenseType === "partnerships"
+    )
+      return;
+
     const roles =
       member.roles.cache
         .filter((role) => role.id !== member.guild.id)

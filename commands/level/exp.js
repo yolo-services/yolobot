@@ -3,6 +3,7 @@ const UserLevel = require("../../models/userLevel");
 const Guild = require("../../models/guild");
 
 module.exports = {
+  license: "premium",
   data: new SlashCommandBuilder()
     .setName("exp")
     .setDescription("Manage user experience points")

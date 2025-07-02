@@ -5,12 +5,12 @@ const {
   userMention,
 } = require("discord.js");
 const mConfig = require("../../messageConfig.json");
-const Config = require("../../config.json");
 const Implementer = require("../../models/implementer");
 const Guild = require("../../models/guild");
 const partnershipSystem = require("../../models/partnershipSystem");
 
 module.exports = {
+  license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("remove-implementer")
     .setDescription("Removes an implementer from the database by user mention.")

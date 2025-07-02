@@ -1,10 +1,8 @@
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  EmbedBuilder,
 } = require("discord.js");
 const Guild = require("../../models/guild");
-const mConfig = require("../../messageConfig.json");
 
 module.exports = {
   data: new SlashCommandBuilder()

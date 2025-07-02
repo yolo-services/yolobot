@@ -9,6 +9,7 @@ const Guild = require("../../models/guild");
 const partnershipSystem = require("../../models/partnershipSystem");
 
 module.exports = {
+  license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("implementer-price")
     .setDescription("Sets a new price for an implementer.")

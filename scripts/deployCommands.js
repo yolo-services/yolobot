@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 require("dotenv").config();
 require("colors");
+
 module.exports = (client) => {
   const commands = [];
   const foldersPath = path.join(__dirname, "../commands");

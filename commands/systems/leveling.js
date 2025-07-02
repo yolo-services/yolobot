@@ -1,13 +1,12 @@
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  EmbedBuilder,
 } = require("discord.js");
 const Leveling = require("../../models/leveling");
 const Guild = require("../../models/guild");
-const mConfig = require("../../messageConfig.json");
 
 module.exports = {
+  license: "premium",
   data: new SlashCommandBuilder()
     .setName("leveling")
     .setDescription("Setup leveling on your server")

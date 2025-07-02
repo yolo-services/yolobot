@@ -34,7 +34,8 @@ module.exports = {
     if (
       partnershipsConfig &&
       message.channel.id === partnershipsConfig.channelId &&
-      member.roles.cache.has(partnershipsConfig.roleId)
+      member.roles.cache.has(partnershipsConfig.roleId) &&
+      guildData.licenseCode
     ) {
       const partnershipLogChannel = await client.channels.fetch(
         guildData.partnershipsLogChannelId
@@ -253,7 +254,9 @@ module.exports = {
     } else if (
       guildData &&
       guildData.enabledSystems.suggestions &&
-      message.channel.id === SuggestionsData.suggestionsChannelId
+      message.channel.id === SuggestionsData.suggestionsChannelId &&
+      guildData.licenseCode &&
+      guildData.licenseType !== "partnerships"
     ) {
       const suggestionEmbed = new EmbedBuilder()
         .setColor(mConfig.embedColorPrimary)
@@ -269,7 +272,12 @@ module.exports = {
       await message.channel.send({ embeds: [suggestionEmbed] });
     }
 
-    if (guildData && guildData.enabledSystems.level) {
+    if (
+      guildData &&
+      guildData.enabledSystems.level &&
+      guildData.licenseCode &&
+      guildData.licenseType === "premium"
+    ) {
       const xpToAdd = 5;
       const userLevelData =
         (await UserLevel.findOne({

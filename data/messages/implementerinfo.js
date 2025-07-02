@@ -3,8 +3,24 @@ const mConfig = require("../../messageConfig.json");
 const implementer = require("../../models/implementer");
 const { PRICE_INCREASE_PER } = require("../partnerships");
 const partnershipSystem = require("../../models/partnershipSystem");
+const Guild = require("../../models/guild");
 
 const getImplementerInfoEmbed = async (user, interaction) => {
+  const guildConfig = await Guild.findOne({ guildId: interaction.guild.id });
+  if (!guildConfig || !guildConfig.enabledSystems.partnerships) {
+    return interaction.reply({
+      content: "This system is disabled! Use `/partnerships toggle enabled:`",
+      ephemeral: true,
+    });
+  }
+
+  if (!guildConfig.licenseCode) {
+    return interaction.reply({
+      content: "This server does not have a license for using this bot.",
+      ephemeral: true,
+    });
+  }
+
   const entry = await implementer.findOne({
     userId: user.id,
     guildId: interaction.guild.id,

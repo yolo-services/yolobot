@@ -1,22 +1,32 @@
 const { HOURS_FOR_LAST_PARTNERSHIP } = require("../data/partnerships");
 const mConfig = require("../messageConfig.json");
 const config = require("../config.json");
+const Guild = require("../models/guild");
 
 const implementer = require("../models/implementer");
 const { EmbedBuilder } = require("discord.js");
 
 const DAY_MS = HOURS_FOR_LAST_PARTNERSHIP * 60 * 60 * 1000;
 
-async function remindInactiveImplementers(client) {
+async function remindInactiveImplementers(client, guildId) {
+  const guildConfig = await Guild.findOne({ guildId });
+  if (
+    !guildConfig ||
+    !guildConfig.enabledSystems.autoMod ||
+    !guildConfig.licenseCode
+  )
+    return;
+
   const now = new Date();
   const since = new Date(now.getTime() - DAY_MS);
 
   console.log(`[INFO] Starting reminder for inactive implementers!`);
 
-  const implementers = await implementer.find({});
+  const implementers = await implementer.find({ guildId });
 
   for (const impl of implementers) {
     const partnershipDone = await implementer.findOne({
+      guildId,
       userId: impl.userId,
       lastAdvertisedAt: { $gte: since },
     });

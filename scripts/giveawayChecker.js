@@ -1,6 +1,7 @@
-const { MessageEmbed, EmbedBuilder } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const Giveaway = require("../models/giveaway");
 const mConfig = require("../messageConfig.json");
+const Guild = require("../models/guild");
 
 async function checkGiveaways(client) {
   const activeGiveaways = await Giveaway.find({
@@ -9,6 +10,15 @@ async function checkGiveaways(client) {
   });
 
   activeGiveaways.forEach(async (giveaway) => {
+    const guildConfig = await Guild.findOne({ guildId: giveaway.guildId });
+    if (
+      !guildConfig ||
+      !guildConfig.enabledSystems.giveaway ||
+      !guildConfig.licenseCode ||
+      guildConfig.licenseType === "partnerships"
+    )
+      return;
+
     const resultChannel = client.channels.cache.get(giveaway.channelId);
 
     if (giveaway.participants && !giveaway.participants.length > 0) {

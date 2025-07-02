@@ -1,12 +1,12 @@
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  EmbedBuilder,
 } = require("discord.js");
 const PartnershipSystem = require("../../models/partnershipSystem");
 const Guild = require("../../models/guild");
 
 module.exports = {
+  license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("partnerships")
     .setDescription("Setup partnerships on your server")

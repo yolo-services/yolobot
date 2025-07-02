@@ -7,6 +7,14 @@ module.exports = {
   name: "guildMemberAdd",
   async execute(client, interaction) {
     const guildConfig = await Guild.findOne({ guildId: interaction.guild.id });
+    if (
+      !guildConfig ||
+      !guildConfig.enabledSystems.welcomer ||
+      !guildConfig.licenseCode ||
+      guildConfig.licenseType === "partnerships"
+    )
+      return;
+
     const welcomerConfig = await Welcomer.findOne({
       guildId: interaction.guild.id,
     });

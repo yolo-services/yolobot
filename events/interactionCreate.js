@@ -43,7 +43,19 @@ module.exports = {
 
     console.log("Interaction ID:", customId);
 
-    const bypassLicenseCommands = ["fix-guild-database", "license", "ping"];
+    const bypassLicenseCommands = [
+      "fix-guild-database",
+      "license",
+      "ping",
+      "help",
+      "botinfo",
+    ];
+    const bypassServerConfigCommands = [
+      "fix-guild-database",
+      "fix-guild-database",
+      "help",
+      "botinfo",
+    ];
 
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
@@ -55,7 +67,10 @@ module.exports = {
         });
       }
 
-      if (!guildConfig && command.data.name !== "fix-guild-database") {
+      if (
+        !guildConfig &&
+        !bypassServerConfigCommands.includes(command.data.name)
+      ) {
         return interaction.reply({
           content: "This server is not configured.",
           ephemeral: true,
@@ -447,7 +462,7 @@ module.exports = {
 
           await interaction.editReply({ embeds: [embed] });
         } else if (interaction.values[0] === "partnerships-requirements") {
-          const embed = getPartnershipsRequirementsEmbed(interaction);
+          const embed = await getPartnershipsRequirementsEmbed(interaction);
           return interaction.editReply({ embeds: [embed] });
         }
       }

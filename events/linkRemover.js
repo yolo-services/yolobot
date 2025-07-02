@@ -1,17 +1,22 @@
-const {
-  Events,
-  EmbedBuilder,
-  PermissionsBitField,
-  PermissionFlagsBits,
-} = require("discord.js");
+const { Events, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const AutoMod = require("../models/automod");
 const mConfig = require("../messageConfig.json");
+const Guild = require("../models/guild");
 
 const TIMEOUT_DURATION = 60000;
 
 module.exports = {
   name: Events.MessageCreate,
   async execute(client, message) {
+    const guildConfig = await Guild.findOne({ guildId: message.guild.id });
+    if (
+      !guildConfig ||
+      !guildConfig.enabledSystems.autoMod ||
+      !guildConfig.licenseCode ||
+      guildConfig.licenseType !== "premium"
+    )
+      return;
+
     const autoModData = await AutoMod.findOne({ guildId: message.guild.id });
     if (!autoModData || !autoModData.enabledFeatures.linkRemover) return;
 

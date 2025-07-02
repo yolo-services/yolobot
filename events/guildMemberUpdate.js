@@ -63,6 +63,7 @@ module.exports = {
               : "Indefinite",
           }
         )
+        .setFooter({ text: mConfig.footerText })
         .setTimestamp();
       await logChannel.send({ embeds: [muteEmbed] });
     } else {
@@ -87,6 +88,7 @@ module.exports = {
             value: executor ? `<@${executor.id}>` : "Unknown",
           }
         )
+        .setFooter({ text: mConfig.footerText })
         .setTimestamp();
       await logChannel.send({ embeds: [unmuteEmbed] });
     }
