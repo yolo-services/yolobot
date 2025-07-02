@@ -2,7 +2,7 @@ const { ButtonBuilder, ButtonStyle } = require("discord.js");
 module.exports = {
   data: {
     customId: "join-welcomer",
-    label: "Join",
+    label: "Join Message",
     style: ButtonStyle.Success,
   },
   async execute(interaction) {

@@ -2,7 +2,7 @@ const { ButtonBuilder, ButtonStyle } = require("discord.js");
 module.exports = {
   data: {
     customId: "leave-welcomer",
-    label: "Leave",
+    label: "Leave Message",
     style: ButtonStyle.Danger,
   },
   async execute(interaction) {

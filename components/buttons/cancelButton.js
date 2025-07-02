@@ -2,7 +2,7 @@ const { ButtonBuilder, ButtonStyle } = require("discord.js");
 module.exports = {
   data: {
     customId: "cancel",
-    label: "Cancel",
+    label: "Cancel Action",
     style: ButtonStyle.Secondary,
   },
   async execute(interaction) {
