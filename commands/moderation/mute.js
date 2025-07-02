@@ -36,15 +36,10 @@ module.exports = {
     try {
       await member.timeout(duration * 60 * 1000); // Czas w milisekundach
 
-      const embed = new EmbedBuilder()
-        .setColor(mConfig.embedColorError)
-        .setTitle("User Muted")
-        .setDescription(
-          `<@${user.id}> has been muted for: ${duration} minute(s)`
-        )
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({
+        content: `User **${user}** has been muted for ${duration} minute(s)`,
+        ephemeral: true,
+      });
     } catch (e) {
       console.log(e);
       return interaction.reply({

@@ -26,9 +26,11 @@ module.exports = {
   async execute(client, interaction) {
     const user = interaction.options.getUser("user");
     const embed = new EmbedBuilder()
+      .setColor(mConfig.embedColorPrimary)
       .setTitle("Moderate Actions")
       .setDescription(`Choose an action for user: ${user}`)
-      .setColor(mConfig.embedColorPrimary);
+      .setFooter({ text: mConfig.footerText })
+      .setTimestamp();
 
     const kick = kickButton.createButton();
     const ban = banButton.createButton();

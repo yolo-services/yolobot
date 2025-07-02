@@ -20,15 +20,9 @@ module.exports = {
     const member = interaction.guild.members.cache.get(user.id);
 
     try {
-      await member.timeout(null); // Czas w milisekundach
+      await member.timeout(null);
 
-      const embed = new EmbedBuilder()
-        .setColor(mConfig.embedColorSuccess)
-        .setTitle("User Unmuted")
-        .setDescription(`<@${user.id}> has been unmuted`)
-        .setTimestamp();
-
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({ content: `User **${user}** has been unmuted`, ephemeral: true });
     } catch (e) {
       console.log(e);
       return interaction.reply({
