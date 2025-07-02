@@ -262,9 +262,14 @@ module.exports = {
         .setFooter({ text: mConfig.footerText })
         .setTimestamp();
 
-      await interaction.reply({
+      await interaction.channel.send({
         embeds: [embed],
         components: [row],
+      });
+
+      await interaction.reply({
+        content: "Panel sent successfully!",
+        ephemeral: true,
       });
     } else if (subcommand === "toggle") {
       guildData.enabledSystems.selfrole = enabled;
