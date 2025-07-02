@@ -39,12 +39,6 @@ module.exports = {
             .setDescription("The description of the panel")
             .setRequired(true)
         )
-        .addRoleOption((option) =>
-          option
-            .setName("adminrole")
-            .setDescription("The admin of ticket role")
-            .setRequired(true)
-        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -102,9 +96,6 @@ module.exports = {
             .setDescription("The panel ID")
             .setRequired(true)
         )
-        .addStringOption((option) =>
-          option.setName("title").setDescription("The title of the panel")
-        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -139,6 +130,17 @@ module.exports = {
             .setRequired(true)
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("set")
+        .setDescription("Set a global ticket settings")
+        .addRoleOption((option) =>
+          option
+            .setName("adminrole")
+            .setDescription("The gobal ticket admin role")
+            .setRequired(true)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(client, interaction) {
@@ -147,13 +149,14 @@ module.exports = {
     const panelId = interaction.options.getString("panelid");
 
     const title = interaction.options.getString("title") || "Ticket Panel";
-    const adminRole = interaction.options.getRole("adminrole");
 
     const label = interaction.options.getString("label");
     const emoji = interaction.options.getString("emoji");
     const description = interaction.options.getString("description");
 
     const enabled = interaction.options.getBoolean("enabled");
+
+    const adminRole = interaction.options.getRole("adminrole");
 
     let guildData =
       (await Guild.findOne({ guildId: interaction.guild.id })) ||
@@ -170,8 +173,13 @@ module.exports = {
       guildId: interaction.guild.id,
     });
 
-    if (subcommand !== "create" && !panel && subcommand !== "toggle") {
-      return interaction.reply("Panel not found");
+    const notPanelSubcommands = ["create", "toggle", "set"];
+
+    if (!notPanelSubcommands.includes(subcommand) && !panel) {
+      return interaction.reply({
+        content: "Panel not found",
+        ephemeral: true,
+      });
     }
 
     if (subcommand === "create") {
@@ -185,7 +193,6 @@ module.exports = {
         title,
         description,
         topics: [],
-        adminRoleId: adminRole.id,
       });
 
       await newPanel.save();
@@ -241,7 +248,7 @@ module.exports = {
         .setColor(mConfig.embedColorPrimary)
         .setTitle(panel.title)
         .setDescription(panel.description)
-        .setFooter({ text: `Powered By ${client.user.tag}` });
+        .setFooter({ text: mConfig.footerText });
 
       const channel = interaction.channel;
       await channel.send({
@@ -254,11 +261,6 @@ module.exports = {
         ephemeral: true,
       });
     } else if (subcommand === "edit") {
-      if (adminRole) {
-        panel.adminRoleId = adminRole.id;
-        await panel.save();
-      }
-
       const modal = new ModalBuilder()
         .setCustomId(`edit-ticket-panel_${panelId}`)
         .setTitle("Edit Ticket Panel");
@@ -288,6 +290,16 @@ module.exports = {
       return interaction.reply(
         `The Ticket system has been ${enabled ? "enabled" : "disabled"}`
       );
+    } else if (subcommand === "set") {
+      if (adminRole) {
+        guildData.ticketAdminRoleId = adminRole.id;
+        await guildData.save();
+      }
+
+      return interaction.reply({
+        content: `Global ticket admin role has been set to <@&${adminRole.id}>`,
+        ephemeral: true,
+      });
     }
   },
 };

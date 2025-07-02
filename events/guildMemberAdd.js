@@ -28,7 +28,10 @@ module.exports = {
             name: "User",
             value: `<@${interaction.user.id}> (${interaction.user.id})`,
             inline: true,
-          });
+          })
+          .setFooter({ text: mConfig.footerText })
+          .setTimestamp();
+
         logChannel.send({ embeds: [joinEmbed] });
       }
     }
@@ -45,7 +48,7 @@ module.exports = {
           )
           .setTitle(welcomerConfig.welcomeMessage.title)
           .setDescription(welcomerConfig.welcomeMessage.body)
-          .setThumbnail(interaction.user.displayAvatarURL())
+          .setThumbnail(interaction.user.displayAvatarURL());
 
         if (welcomerConfig.welcomeMessage.image) {
           embed.setImage(welcomerConfig.welcomeMessage.image);

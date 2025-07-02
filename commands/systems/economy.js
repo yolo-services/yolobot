@@ -73,6 +73,16 @@ module.exports = {
       guildData.enabledSystems.economy = enabled;
       await guildData.save();
 
+      let ecoConfig = await Economy.findOne({ guildId });
+
+      if (!ecoConfig) {
+        ecoConfig = new Economy({
+          guildId,
+        });
+      }
+
+      await ecoConfig.save();
+
       return interaction.reply({
         content: `The economy system has been ${
           enabled ? "enabled" : "disabled"
