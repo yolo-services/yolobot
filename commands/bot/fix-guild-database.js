@@ -7,10 +7,11 @@ module.exports = {
     .setDescription("Fix the guild database error")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
-    const existing = await Guild.findOne({ guildId: guild.id });
+    const existing = await Guild.findOne({ guildId: interaction.guild.id });
     if (existing) {
       return interaction.reply({
-        content: "This server is already in the database. Nothing to do.",
+        content:
+          "This server is already in the database. Nothing to do. Everything is fine.",
         ephemeral: true,
       });
     }
