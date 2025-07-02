@@ -1,10 +1,8 @@
-const {
-  SlashCommandBuilder,
-  PermissionFlagsBits,
-} = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const Guild = require("../../models/guild");
 
 module.exports = {
+  license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("logs")
     .setDescription("Setup logs and notifications on your server!")
