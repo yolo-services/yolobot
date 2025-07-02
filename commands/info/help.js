@@ -9,6 +9,7 @@ const {
 const fs = require("node:fs");
 const path = require("node:path");
 const mConfig = require("../../messageConfig.json");
+const Config = require("../../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,14 +17,12 @@ module.exports = {
     .setDescription("Displays a list of available commands"),
 
   async execute(client, interaction) {
-    // Pobieranie kategorii z folderów komend
     const categories = fs.readdirSync(path.join(__dirname, "../../commands"));
     const categoryOptions = categories.map((category) => ({
       label: category.charAt(0).toUpperCase() + category.slice(1),
       value: category,
     }));
 
-    // Menu wyboru kategorii
     const selectMenu = new StringSelectMenuBuilder()
       .setCustomId("command_category")
       .setPlaceholder("Choose a category")
@@ -35,18 +34,20 @@ module.exports = {
       new ButtonBuilder()
         .setLabel("Website")
         .setStyle(ButtonStyle.Link)
-        .setURL("https://yolobot.xyz/"),
+        .setURL(Config.websiteURL),
 
       new ButtonBuilder()
         .setLabel("Support")
         .setStyle(ButtonStyle.Link)
-        .setURL("https://discord.gg/Jm4jq7qykA")
+        .setURL(Config.supportServerURL)
     );
 
     const helpEmbed = new EmbedBuilder()
       .setColor(mConfig.embedColorPrimary)
       .setTitle("Help")
-      .setDescription("Choose the category to see the commands list!");
+      .setDescription("Choose the category to see the commands list!")
+      .setFooter({ text: mConfig.footerText })
+      .setTimestamp();
 
     await interaction.reply({
       embeds: [helpEmbed],
@@ -71,6 +72,7 @@ module.exports = {
         .setColor(mConfig.embedColorPrimary)
         .setTitle(category.charAt(0).toUpperCase() + category.slice(1))
         .setDescription("Available commands list:")
+        .setFooter({ text: mConfig.footerText })
         .setTimestamp();
 
       commandFiles.forEach((file) => {

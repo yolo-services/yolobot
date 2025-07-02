@@ -15,9 +15,10 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(mConfig.embedColorPrimary)
       .setTitle(`${user.username}'s Avatar`)
+      .setFields([{ name: "User", value: `<@${user.id}> (${user.id})` }])
       .setImage(user.displayAvatarURL({ dynamic: true, size: 1024 }))
       .setTimestamp()
-      .setFooter({ text: `Requested by ${interaction.user.username}` });
+      .setFooter({ text: mConfig.footerText });
 
     await interaction.reply({ embeds: [embed] });
   },

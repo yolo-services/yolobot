@@ -11,12 +11,12 @@ module.exports = {
       .setColor(mConfig.embedColorPrimary)
       .setTitle(`${client.user.tag} Information`)
       .addFields(
-        { name: 'Bot ID', value: client.user.id, inline: true },
-        { name: 'Total Servers', value: `${client.guilds.cache.size}`, inline: true },
-        { name: 'Uptime', value: `${Math.floor(client.uptime / 1000)} seconds`, inline: true },
-        { name: 'Created At', value: `<t:${Math.floor(client.user.createdTimestamp / 1000)}:D>`, inline: true }
+        { name: 'Bot ID', value: client.user.id },
+        { name: 'Total Servers', value: `${client.guilds.cache.size}` },
+        { name: 'Uptime', value: `${Math.floor(client.uptime / 1000)} seconds` },
+        { name: 'Created At', value: `<t:${Math.floor(client.user.createdTimestamp / 1000)}:D>` }
       )
-      .setFooter({ text: `Requested by ${interaction.user.tag}` })
+      .setFooter({ text: mConfig.footerText })
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });

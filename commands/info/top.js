@@ -45,7 +45,9 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle("Leveling Leaderboard")
         .setColor(mConfig.embedColorPrimary)
-        .setDescription("Top 10 users with the highest XP!");
+        .setDescription("Top 10 users with the highest XP!")
+        .setFooter({ text: mConfig.footerText })
+        .setTimestamp();
 
       topUsers.forEach((userData, index) => {
         const member = interaction.guild.members.cache.get(userData.userId);
@@ -77,7 +79,9 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle("Economy Leaderboard")
         .setColor(mConfig.embedColorPrimary)
-        .setDescription("Top 10 users with the most money in bank!");
+        .setDescription("Top 10 users with the most money in bank!")
+        .setFooter({ text: mConfig.footerText })
+        .setTimestamp();
 
       topUsers.forEach((userData, index) => {
         const member = interaction.guild.members.cache.get(userData.userId);

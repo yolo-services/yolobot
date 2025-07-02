@@ -16,7 +16,9 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(mConfig.embedColorPrimary)
       .setTitle("Invite Me")
-      .setDescription("Click the button below to invite me to your server!");
+      .setDescription("Click the button below to invite me to your server!")
+      .setFooter({ text: mConfig.footerText })
+      .setTimestamp();
 
     const inviteButton = new ButtonBuilder()
       .setLabel("Invite")
