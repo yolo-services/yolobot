@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const {
   partnershipsInfoMessage,
 } = require("../../data/messages/partnershipsInfo");
@@ -7,7 +7,8 @@ module.exports = {
   license: "partnerships",
   data: new SlashCommandBuilder()
     .setName("partnerships-info")
-    .setDescription("Displays all partnerships information"),
+    .setDescription("Displays all partnerships information")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(client, interaction) {
     await interaction.deferReply({ ephemeral: true });
     await interaction.channel.send(partnershipsInfoMessage(interaction));
