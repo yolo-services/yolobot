@@ -1,4 +1,4 @@
-# YoloBot - All in on modern discord bot
+# YoloBot
 
 Welcome to the **Yolobot** GitHub repository! Yolobot is a public Discord bot built using [Discord.js v14](https://discord.js.org/), designed to enhance your server's functionality with a variety of features. Feel free to explore the code, report any issues, or contribute to its development.
 
