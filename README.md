@@ -24,12 +24,9 @@ Yolobot comes with a wide range of commands designed for moderation, fun, and ut
 
 New commands can easily be added to fit your server's needs!
 
-## Contribution
-We welcome contributions from the community! If you'd like to improve YoloBot or add new features, feel free to fork the repository and submit a pull request. Bug reports and feature suggestions are also highly appreciated.
+## Info
+Join our community on [discord](https://dc.yolobot.xyz) for 📣 announcements  
+Made with 💙 by [fendziorr](https://github.com/xfendi)
 
-To contribute:
-
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature-branch`).
-3. Commit your changes.
-4. Open a pull request, and let's make YoloBot even better together!
+This project is not open-source.  
+Copyright (c) 2025 [YoloBot](https://yolobot.xyz) by [fendziorr](https://github.com/xfendi)
